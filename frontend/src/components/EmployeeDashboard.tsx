@@ -45,8 +45,8 @@ export const EmployeeDashboard = () => {
                         <Typography>No leads assigned yet.</Typography>
                     ) : (
                         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
-                            {leads.map((lead) => (
-                                <LeadCard key={lead.id} lead={lead} />
+                            {leads.map((lead, index) => (
+                                <LeadCard key={index} lead={lead} />
                             ))}
                         </Box>
                     )}
