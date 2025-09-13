@@ -33,7 +33,7 @@ export const LeadsOnly = () => {
         <Box p={4}>
             <Grid container spacing={3}>
                 {leads.map((lead, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                         <LeadCard lead={lead} />
                     </Grid>
                 ))}

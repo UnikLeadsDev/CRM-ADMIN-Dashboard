@@ -1,4 +1,3 @@
-import { ChakraProvider } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
 
 interface ChakraProviderWrapperProps {
@@ -6,9 +5,5 @@ interface ChakraProviderWrapperProps {
 }
 
 export const ChakraProviderWrapper = ({ children }: ChakraProviderWrapperProps) => {
-    return (
-        <ChakraProvider>
-            {children}
-        </ChakraProvider>
-    );
+    return <>{children}</>;
 };
