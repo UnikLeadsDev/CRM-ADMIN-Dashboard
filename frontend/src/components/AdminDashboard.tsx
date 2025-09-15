@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { Container, Stack, Typography, CircularProgress, Box, Tabs, Tab, Paper } from '@mui/material';
+import { Stack, Typography, Box, Tabs, Tab, Paper } from '@mui/material';
 import { CSVUpload } from './CSVUpload';
-import { LeadCard } from './LeadCard';
-import { LeadAssignment } from './LeadAssignment';
 import { LeadsAssignedReport } from './LeadsAssignedReport';
 import { LeadsTableView } from './LeadsTableView';
 import { useLeads } from '../hooks/useLeads';
@@ -32,7 +30,7 @@ export const AdminDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
   const { leads, loading, error } = useLeads();
   
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
-  Container, Typography, Card, CardContent, Grid, Box,
+  Typography, Card, CardContent, Box,
   Button, FormControl, InputLabel, Select, MenuItem,
   Checkbox, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Stack, CircularProgress,
-  TextField, Alert
+  Alert
 } from '@mui/material';
 import { leadAssignmentService } from '../services/leadAssignmentService';
 import { useEmployee } from '../hooks/useEmployee';
@@ -18,7 +18,8 @@ export const LeadAssignment = () => {
   const [assigning, setAssigning] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
-  const { employees } = useEmployee();
+  const { employee } = useEmployee();
+  const employees = employee ? [employee] : [];
 
   useEffect(() => {
     loadUnassignedLeads();
@@ -58,7 +59,8 @@ export const LeadAssignment = () => {
     
     try {
       setAssigning(true);
-      await leadAssignmentService.assignLeads(selectedLeads, selectedEmployee);
+      const selectedLeadData = selectedLeads.map(index => unassignedLeads[parseInt(index)]);
+      await leadAssignmentService.assignLeadsByData(selectedLeadData, selectedEmployee);
       setMessage({ type: 'success', text: `${selectedLeads.length} leads assigned successfully!` });
       setSelectedLeads([]);
       setSelectedEmployee('');
@@ -75,10 +77,9 @@ export const LeadAssignment = () => {
     
     try {
       setAssigning(true);
-      const employeeIds = employees.map(emp => emp.employee_id);
-      const leadIds = unassignedLeads.map(lead => lead.id!);
-      await leadAssignmentService.autoAssignLeads(leadIds, employeeIds);
-      setMessage({ type: 'success', text: `${leadIds.length} leads auto-assigned successfully!` });
+      const employeeIds = employees.map((emp: any) => emp.employee_id);
+      await leadAssignmentService.autoAssignLeadsByData(unassignedLeads, employeeIds);
+      setMessage({ type: 'success', text: `${unassignedLeads.length} leads auto-assigned successfully!` });
       loadUnassignedLeads();
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to auto-assign leads' });
@@ -89,10 +90,10 @@ export const LeadAssignment = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
+      <Box sx={{ width: '100%', p: 4, textAlign: 'center' }}>
         <CircularProgress />
         <Typography>Loading unassigned leads...</Typography>
-      </Container>
+      </Box>
     );
   }
 
@@ -108,8 +109,8 @@ export const LeadAssignment = () => {
         </Alert>
       )}
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -123,7 +124,7 @@ export const LeadAssignment = () => {
                     onChange={(e) => setSelectedEmployee(e.target.value)}
                     label="Select Employee"
                   >
-                    {employees.map(emp => (
+                    {employees.map((emp: any) => (
                       <MenuItem key={emp.id} value={emp.employee_id}>
                         {emp.employee_id} - {emp.name}
                       </MenuItem>
@@ -140,9 +141,9 @@ export const LeadAssignment = () => {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
         
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -158,12 +159,12 @@ export const LeadAssignment = () => {
                 disabled={unassignedLeads.length === 0 || employees.length === 0 || assigning}
                 fullWidth
               >
-                Auto-Assign All Leads ({unassignedLeads.length})
+                Auto-Assign All ({unassignedLeads.length} leads)
               </Button>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       <Card>
         <CardContent>

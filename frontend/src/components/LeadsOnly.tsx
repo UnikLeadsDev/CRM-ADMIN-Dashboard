@@ -110,7 +110,7 @@ export const LeadsOnly = () => {
 
       <Grid container spacing={2}>
         {paginatedLeads.map((lead, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+          <Grid xs={12} sm={6} md={4} lg={3} key={index}>
             <Card sx={{ height: 280, display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flex: 1, p: 2 }}>
                 <Stack spacing={1}>
