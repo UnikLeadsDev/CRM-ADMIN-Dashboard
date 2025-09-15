@@ -10,6 +10,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/employee/:employeeId" element={<EmployeeDashboard />} />
         <Route path="/leads" element={<LeadsOnly />} />
+        <Route path="/lead" element={<LeadsOnly />} />
         <Route path="/" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>

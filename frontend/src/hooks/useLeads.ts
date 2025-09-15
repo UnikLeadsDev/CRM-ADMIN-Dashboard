@@ -11,7 +11,7 @@ export const useLeads = (employeeId?: string) => {
         const fetchLeads = async () => {
             try {
                 setLoading(true);
-                let query = supabase.from('unikleadsapi').select('*');
+                let query = supabase.from('unikleadsapi').select('*').order('Date', { ascending: false });
                 
                 if (employeeId) {
                     query = query.eq('Assigned to Lead Employee ID', employeeId);
@@ -41,7 +41,7 @@ export const useLeads = (employeeId?: string) => {
             const result = await processCSVFile(file);
             
             // Refresh leads after upload
-            const { data } = await supabase.from('unikleadsapi').select('*');
+            const { data } = await supabase.from('unikleadsapi').select('*').order('Date', { ascending: false });
             setLeads(data || []);
             
             return result;

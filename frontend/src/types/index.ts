@@ -1,4 +1,5 @@
 export interface Lead {
+    id?: string;
     'Assigned to Lead Employee ID': string;
     'Customer Name': string;
     'Mobile Number': string;
@@ -7,6 +8,14 @@ export interface Lead {
     'Customer City': string;
     'Email ID': string;
     'Date': string;
+    status: 'open' | 'in_process' | 'closed' | 'not_interested';
+    assigned_at?: string;
+}
+
+export interface LeadAssignment {
+    employee_id: string;
+    lead_count: number;
+    leads: Lead[];
 }
 
 export interface Employee {

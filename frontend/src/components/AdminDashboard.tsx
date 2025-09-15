@@ -1,52 +1,74 @@
-import { Container, Stack, Typography, CircularProgress, Box } from '@mui/material';
+import { useState } from 'react';
+import { Container, Stack, Typography, CircularProgress, Box, Tabs, Tab, Paper } from '@mui/material';
 import { CSVUpload } from './CSVUpload';
 import { LeadCard } from './LeadCard';
+import { LeadAssignment } from './LeadAssignment';
+import { LeadsAssignedReport } from './LeadsAssignedReport';
+import { LeadsTableView } from './LeadsTableView';
 import { useLeads } from '../hooks/useLeads';
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`admin-tabpanel-${index}`}
+      aria-labelledby={`admin-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
 export const AdminDashboard = () => {
+  const [tabValue, setTabValue] = useState(0);
   const { leads, loading, error } = useLeads();
   
-  console.log('AdminDashboard - leads:', leads, 'loading:', loading, 'error:', error);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 8 }}>
-      <Stack spacing={4}>
-        <Typography variant="h3" align="center" gutterBottom>
-          UniKLeads CRM - Admin Dashboard
-        </Typography>
+    <Box sx={{ width: '100vw', minHeight: '100vh', p: { xs: 2, sm: 3 } }}>
+      <Typography variant="h3" align="center" gutterBottom sx={{ mb: 4 }}>
+        UniKLeads CRM - Admin Dashboard
+      </Typography>
 
-        <CSVUpload />
+      <Paper sx={{ mb: 3, width: '100%' }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          centered
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ minHeight: 48 }}
+        >
+          <Tab label="All Leads" />
+          <Tab label="Assignment Report" />
+        </Tabs>
+      </Paper>
 
-        {loading ? (
-          <Stack alignItems="center" py={4}>
-            <CircularProgress />
-            <Typography>Loading leads...</Typography>
-          </Stack>
-        ) : error ? (
-          <Stack alignItems="center" py={4}>
-            <Typography color="error">Error: {error}</Typography>
-          </Stack>
-        ) : leads.length === 0 ? (
-          <Stack alignItems="center" py={4}>
-            <Typography>No leads found. Upload a CSV file to get started.</Typography>
-          </Stack>
-        ) : (
-          <Box sx={{
-            display: 'grid',
-            gap: 3,
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)'
-            }
-          }}>
-            {leads.map((lead, index) => (
-              <LeadCard key={index} lead={lead} />
-            ))}
-          </Box>
-        )}
-      </Stack>
-    </Container>
+      <TabPanel value={tabValue} index={0}>
+        <Stack spacing={4}>
+          <CSVUpload />
+          
+          <LeadsTableView leads={leads} loading={loading} error={error} />
+        </Stack>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <Box sx={{ width: '100%' }}>
+          <LeadsAssignedReport />
+        </Box>
+      </TabPanel>
+    </Box>
   );
 };

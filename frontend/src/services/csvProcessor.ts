@@ -44,7 +44,8 @@ export const processCSVFile = async (file: File): Promise<{
                         'Type of Lead': row['Type of Lead'] || '',
                         'Customer City': row['Customer City'] || '',
                         'Email ID': row['Email ID'] || '',
-                        'Date': new Date().toISOString()
+                        'Date': new Date().toISOString(),
+                        status: 'open'
                     });
                 }
                 

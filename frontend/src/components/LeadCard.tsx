@@ -16,7 +16,7 @@ export const LeadCard = ({ lead }: LeadCardProps) => {
         window.open(whatsappUrl, '_blank');
     };
 
-    const getStatusColor = (status: string): "success" | "warning" | "error" => {
+    const getStatusColor = (status: string): "success" | "warning" | "error" | "primary" => {
         switch (status) {
             case 'Hot Lead':
                 return 'error';
@@ -24,6 +24,14 @@ export const LeadCard = ({ lead }: LeadCardProps) => {
                 return 'warning';
             case 'Cold Lead':
                 return 'success';
+            case 'open':
+                return 'primary';
+            case 'in_process':
+                return 'warning';
+            case 'closed':
+                return 'success';
+            case 'not_interested':
+                return 'error';
             default:
                 return 'warning';
         }
@@ -91,6 +99,28 @@ export const LeadCard = ({ lead }: LeadCardProps) => {
                         <Typography variant="body1">
                             {new Date(lead['Date']).toLocaleString()}
                         </Typography>
+                    </Stack>
+
+                    {lead['Assigned to Lead Employee ID'] && (
+                        <Stack spacing={1}>
+                            <Typography color="text.secondary" variant="caption">
+                                Assigned to
+                            </Typography>
+                            <Typography variant="body1">
+                                {lead['Assigned to Lead Employee ID']}
+                            </Typography>
+                        </Stack>
+                    )}
+
+                    <Stack spacing={1}>
+                        <Typography color="text.secondary" variant="caption">
+                            Status
+                        </Typography>
+                        <Chip 
+                            label={lead.status || 'open'}
+                            color={getStatusColor(lead.status || 'open')}
+                            size="small"
+                        />
                     </Stack>
                 </Stack>
             </CardContent>
