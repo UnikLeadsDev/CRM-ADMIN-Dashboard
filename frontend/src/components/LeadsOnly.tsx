@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   Box, Typography, CircularProgress, TextField, Select, MenuItem,
-  FormControl, InputLabel, Stack, Chip, Pagination, Grid, Card, CardContent, Button
+  FormControl, InputLabel, Stack, Chip, Pagination, Card, CardContent, Button
 } from '@mui/material';
 import { Call as CallIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
 import { useLeads } from '../hooks/useLeads';
@@ -108,9 +108,9 @@ export const LeadsOnly = () => {
         </FormControl>
       </Stack>
 
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' } }}>
         {paginatedLeads.map((lead, index) => (
-          <Grid xs={12} sm={6} md={4} lg={3} key={index}>
+          <Box key={index}>
             <Card sx={{ height: 280, display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flex: 1, p: 2 }}>
                 <Stack spacing={1}>
@@ -177,9 +177,9 @@ export const LeadsOnly = () => {
                 </Button>
               </Stack>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       <Box display="flex" justifyContent="center" mt={3}>
         <Pagination

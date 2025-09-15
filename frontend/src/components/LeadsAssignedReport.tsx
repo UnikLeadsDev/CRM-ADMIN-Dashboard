@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  Container, Typography, Card, CardContent, Grid, Box, Chip,
+  Typography, Card, CardContent, Box, Chip,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Stack, CircularProgress, Select, MenuItem, FormControl,
-  InputLabel, Button
+  Paper, CircularProgress, Select, MenuItem, FormControl,
+  InputLabel
 } from '@mui/material';
 import { leadAssignmentService } from '../services/leadAssignmentService';
 import type { LeadAssignment, Lead } from '../types';
@@ -78,32 +78,28 @@ export const LeadsAssignedReport = () => {
       </Typography>
 
       {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Total Leads Assigned
-              </Typography>
-              <Typography variant="h4">
-                {totalLeads}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Active Employees
-              </Typography>
-              <Typography variant="h4">
-                {assignments.length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+        <Card sx={{ flex: 1, minWidth: 200 }}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Total Leads Assigned
+            </Typography>
+            <Typography variant="h4">
+              {totalLeads}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ flex: 1, minWidth: 200 }}>
+          <CardContent>
+            <Typography color="textSecondary" gutterBottom>
+              Active Employees
+            </Typography>
+            <Typography variant="h4">
+              {assignments.length}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* Filter */}
       <Box sx={{ mb: 3 }}>
