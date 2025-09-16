@@ -198,7 +198,7 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
                       />
                     </TableCell>
                   </TableRow>
-                ))
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
