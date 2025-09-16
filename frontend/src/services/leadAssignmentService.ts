@@ -51,32 +51,8 @@ export const leadAssignmentService = {
 
   // Get leads assigned to employees
   async getLeadAssignments(): Promise<LeadAssignment[]> {
-    const { data, error } = await supabase
-      .from('unikleadsapi')
-      .select('*')
-      .not('Assigned to Lead Employee ID', 'is', null)
-      .neq('Assigned to Lead Employee ID', '');
-    
-    if (error) throw error;
-
-    const assignments: { [key: string]: LeadAssignment } = {};
-    
-    data?.forEach(lead => {
-      const empId = lead['Assigned to Lead Employee ID'];
-      if (empId && empId.trim()) {
-        if (!assignments[empId]) {
-          assignments[empId] = {
-            employee_id: empId,
-            lead_count: 0,
-            leads: []
-          };
-        }
-        assignments[empId].lead_count++;
-        assignments[empId].leads.push(lead);
-      }
-    });
-
-    return Object.values(assignments);
+    const { apiClient } = await import('./apiClient');
+    return await apiClient.getAssignedLeads();
   },
 
   // Get unassigned leads

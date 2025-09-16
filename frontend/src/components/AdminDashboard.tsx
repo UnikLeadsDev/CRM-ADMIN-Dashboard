@@ -45,8 +45,6 @@ export const AdminDashboard = () => {
           value={tabValue} 
           onChange={handleTabChange} 
           centered
-          variant="scrollable"
-          scrollButtons="auto"
           sx={{ minHeight: 48 }}
         >
           <Tab label="All Leads" />
@@ -55,7 +53,7 @@ export const AdminDashboard = () => {
       </Paper>
 
       <TabPanel value={tabValue} index={0}>
-        <Stack spacing={4}>
+        <Stack spacing={2}>
           <CSVUpload />
           
           <LeadsTableView leads={leads} loading={loading} error={error} />

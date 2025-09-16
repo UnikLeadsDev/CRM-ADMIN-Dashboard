@@ -81,19 +81,18 @@ export const CSVUpload = () => {
 
     return (
         <Box sx={{ 
-            p: 4, 
+            p: 2, 
             border: 1, 
             borderRadius: 1, 
             borderColor: 'divider',
             bgcolor: 'background.paper' 
         }}>
-            <Stack spacing={3}>
-                <Typography variant="h6">
-                    Upload Leads CSV
+            <Stack spacing={2}>
+                <Typography variant="subtitle1" sx={{ fontSize: '1rem' }}>
+                    Upload CSV
                 </Typography>
                 
-                <FormControl>
-                    <FormLabel>Select CSV File</FormLabel>
+                <Stack direction="row" spacing={1} alignItems="center">
                     <TextField
                         type="file"
                         inputProps={{
@@ -101,27 +100,23 @@ export const CSVUpload = () => {
                         }}
                         onChange={handleFileChange}
                         disabled={uploading}
-                        fullWidth
+                        size="small"
+                        sx={{ flex: 1 }}
                     />
-                </FormControl>
-
-                {file && (
-                    <Typography variant="body2" color="text.secondary">
-                        Selected file: {file.name}
-                    </Typography>
-                )}
+                    
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUpload}
+                        disabled={!file || uploading}
+                        size="small"
+                        sx={{ minWidth: 80, whiteSpace: 'nowrap' }}
+                    >
+                        {uploading ? 'Uploading' : 'Upload'}
+                    </Button>
+                </Stack>
 
                 {uploading && <LinearProgress />}
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleUpload}
-                    disabled={!file || uploading}
-                    sx={{ mt: 2 }}
-                >
-                    {uploading ? 'Uploading...' : 'Upload CSV'}
-                </Button>
             </Stack>
 
             <Snackbar

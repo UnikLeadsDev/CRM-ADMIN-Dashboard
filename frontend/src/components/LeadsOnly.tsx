@@ -3,6 +3,7 @@ import {
   Box, Typography, CircularProgress, TextField, Select, MenuItem,
   FormControl, InputLabel, Stack, Chip, Pagination, Card, CardContent, Button
 } from '@mui/material';
+import { apiClient } from '../services/apiClient';
 import { Call as CallIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
 import { useLeads } from '../hooks/useLeads';
 import type { Lead } from '../types';
@@ -13,20 +14,37 @@ export const LeadsOnly = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [leadStatuses, setLeadStatuses] = useState<{[key: number]: Lead['status']}>({});
   const leadsPerPage = 24;
 
+  // Debug: Log unique status values
+  console.log('All status values in leads:', [...new Set(leads.map(lead => lead.status))]);
+  console.log('Current status filter:', statusFilter);
+
   const filteredLeads = useMemo(() => {
-    return leads.filter(lead => {
+    const filtered = leads.filter(lead => {
       const matchesSearch = !search || 
-        lead['Customer Name'].toLowerCase().includes(search.toLowerCase()) ||
-        lead['Mobile Number'].includes(search) ||
-        lead['Email ID'].toLowerCase().includes(search.toLowerCase());
+        lead['Customer Name']?.toLowerCase().includes(search.toLowerCase()) ||
+        lead['Mobile Number']?.includes(search) ||
+        lead['Email ID']?.toLowerCase().includes(search.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      // Handle status filtering - check for exact match or null/undefined for 'open'
+      let matchesStatus = false;
+      if (statusFilter === 'all') {
+        matchesStatus = true;
+      } else if (statusFilter === 'open') {
+        matchesStatus = !lead.status || lead.status === 'open';
+      } else {
+        matchesStatus = lead.status === statusFilter;
+      }
+      
       const matchesEmployee = employeeFilter === 'all' || lead['Assigned to Lead Employee ID'] === employeeFilter;
       
       return matchesSearch && matchesStatus && matchesEmployee;
     });
+    
+    console.log('Filtered leads count:', filtered.length, 'for status:', statusFilter);
+    return filtered;
   }, [leads, search, statusFilter, employeeFilter]);
 
   const paginatedLeads = useMemo(() => {
@@ -55,6 +73,17 @@ export const LeadsOnly = () => {
 
   const handleWhatsApp = (phone: string) => {
     window.open(`https://wa.me/${phone}`, '_blank');
+  };
+
+  const handleStatusUpdate = async (lead: Lead, index: number, status: Lead['status']) => {
+    try {
+      await apiClient.updateLeadStatus(lead, status);
+      setLeadStatuses(prev => ({ ...prev, [index]: status }));
+      alert('Status updated successfully!');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status');
+    }
   };
 
   if (loading) {
@@ -109,7 +138,10 @@ export const LeadsOnly = () => {
       </Stack>
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' } }}>
-        {paginatedLeads.map((lead, index) => (
+        {paginatedLeads.map((lead, index) => {
+          const currentStatus = leadStatuses[index] || lead.status || 'open';
+          
+          return (
           <Box key={index}>
             <Card sx={{ height: 280, display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flex: 1, p: 2 }}>
@@ -119,8 +151,8 @@ export const LeadsOnly = () => {
                       {lead['Customer Name']}
                     </Typography>
                     <Chip 
-                      label={lead.status || 'open'}
-                      color={getStatusColor(lead.status || 'open')}
+                      label={currentStatus}
+                      color={getStatusColor(currentStatus)}
                       size="small"
                     />
                   </Stack>
@@ -153,6 +185,22 @@ export const LeadsOnly = () => {
                 </Stack>
               </CardContent>
               
+              <Box sx={{ px: 2, pb: 1 }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Update Status</InputLabel>
+                  <Select
+                    value={currentStatus}
+                    onChange={(e) => handleStatusUpdate(lead, index, e.target.value as Lead['status'])}
+                    label="Update Status"
+                  >
+                    <MenuItem value="open">Open</MenuItem>
+                    <MenuItem value="in_process">In Process</MenuItem>
+                    <MenuItem value="closed">Closed</MenuItem>
+                    <MenuItem value="not_interested">Not Interested</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              
               <Stack direction="row" spacing={1} sx={{ p: 1 }}>
                 <Button
                   variant="contained"
@@ -178,7 +226,8 @@ export const LeadsOnly = () => {
               </Stack>
             </Card>
           </Box>
-        ))}
+          );
+        })}
       </Box>
 
       <Box display="flex" justifyContent="center" mt={3}>
