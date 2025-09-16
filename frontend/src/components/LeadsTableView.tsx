@@ -140,6 +140,7 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Date</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Phone</TableCell>
                   <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
@@ -148,12 +149,12 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Reassign</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedLeads.map((lead, index) => (
                   <TableRow key={index} hover>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{new Date(lead['Date']).toLocaleDateString()}</TableCell>
                     <TableCell>{lead['Customer Name']}</TableCell>
                     <TableCell>{lead['Mobile Number']}</TableCell>
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{lead['Email ID']}</TableCell>
@@ -196,9 +197,8 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
                         size="small"
                       />
                     </TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{new Date(lead['Date']).toLocaleDateString()}</TableCell>
                   </TableRow>
-                ))}
+                ))
               </TableBody>
             </Table>
           </TableContainer>
