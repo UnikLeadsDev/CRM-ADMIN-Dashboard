@@ -5,6 +5,7 @@ import { LeadsAssignedReport } from './LeadsAssignedReport';
 import { LeadsTableView } from './LeadsTableView';
 import { LeadsOnly } from './LeadsOnly';   // ⬅️ Import your new component
 import { useLeads } from '../hooks/useLeads';
+import LeadForm from './LeadForm'; // ⬅️ Import the LeadForm component
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -99,6 +100,7 @@ export const AdminDashboard = () => {
           <Tab label="📋 All Leads" />
           <Tab label="📊 Assignment Report" />
           <Tab label="🧾 Leads Only" /> {/* ⬅️ New Tab */}
+          <Tab label="➕ Add Lead" /> {/* ⬅️ New Tab */}
         </Tabs>
       </Paper>
 
@@ -142,6 +144,12 @@ export const AdminDashboard = () => {
           {/* Tab 3 */}
           <TabPanel value={tabValue} index={2}>
             <LeadsOnly />  {/* ⬅️ Your component */}
+          </TabPanel>
+
+          
+          {/* Tab 4 */}
+          <TabPanel value={tabValue} index={3}>
+            <LeadForm />
           </TabPanel>
         </Paper>
       </Box>

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AdminDashboard } from './components/AdminDashboard';
 import { EmployeeDashboard } from './components/EmployeeDashboard';
 import { LeadsOnly } from './components/LeadsOnly';
+import LeadForm  from './components/LeadForm';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/employee/:employeeId" element={<EmployeeDashboard />} />
         <Route path="/leads" element={<LeadsOnly />} />
         <Route path="/lead" element={<LeadsOnly />} />
+        <Route path="/leadform" element={<LeadForm />} />
         <Route path="/" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>
