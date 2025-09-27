@@ -6,6 +6,7 @@ import { LeadsTableView } from './LeadsTableView';
 import { LeadsOnly } from './LeadsOnly';   // ⬅️ Import your new component
 import { useLeads } from '../hooks/useLeads';
 import LeadForm from './LeadForm'; // ⬅️ Import the LeadForm component
+import ChannelPartnerForm from './ChannelPartnerForm';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -39,7 +40,7 @@ export const AdminDashboard = () => {
 
   return (
     <Box sx={{ display: "flex", width: "100vw", minHeight: "100vh", bgcolor: "#f4f6f8" }}>
-      
+
       {/* Sidebar */}
       <Paper
         elevation={3}
@@ -101,6 +102,7 @@ export const AdminDashboard = () => {
           <Tab label="📊 Assignment Report" />
           <Tab label="🧾 Leads Only" /> {/* ⬅️ New Tab */}
           <Tab label="➕ Add Lead" /> {/* ⬅️ New Tab */}
+          <Tab label="💼 Channel Partner" />
         </Tabs>
       </Paper>
 
@@ -146,10 +148,15 @@ export const AdminDashboard = () => {
             <LeadsOnly />  {/* ⬅️ Your component */}
           </TabPanel>
 
-          
+
           {/* Tab 4 */}
           <TabPanel value={tabValue} index={3}>
             <LeadForm />
+          </TabPanel>
+
+          {/* Tab 5 - Channel Partner */}
+          <TabPanel value={tabValue} index={4}>
+            <ChannelPartnerForm />
           </TabPanel>
         </Paper>
       </Box>
