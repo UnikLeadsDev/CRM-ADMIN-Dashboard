@@ -78,6 +78,7 @@ const validateLead = (req, res, next) => {
 // ✅ POST /api/leads - Create new lead
 app.post('/api/leads', validateLead, async (req, res) => {
   try {
+  
     // Normalize input (prevent undefined going into MySQL)
     const leadData = {
       full_name: req.body.full_name?.trim() || req.body.fullName?.trim() || null,
@@ -94,7 +95,7 @@ app.post('/api/leads', validateLead, async (req, res) => {
       referral_code: req.body.referralCode || null,
       lead_type: req.body.leadType || null   // 👈 Added back lead_type
     };
-
+    
     const [result] = await pool.query(
       `INSERT INTO leads 
        (full_name, mobile_number, product, loan_amount, email, pancard_number, 
@@ -117,15 +118,18 @@ app.post('/api/leads', validateLead, async (req, res) => {
         leadData.lead_type
       ]
     );
+ 
 
     const leadId = result.insertId;
+    console.log(`Lead created with ID: ${leadId}`);
 
     const formattedAmount =
       new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(
         leadData.loan_amount || 0
       ) + '/-';
 
-    res.status(201).json({
+      
+    res.status(200).json({
       success: true,
       message: 'Lead added successfully',
       lead: {
@@ -148,6 +152,21 @@ app.post('/api/leads', validateLead, async (req, res) => {
     });
   }
 });
+
+app.get('/api/getid', async (req, res) => {
+    console.log('Inside getid api');
+    try{
+        console.log('Fetching latest lead id...');
+        const result= await pool.query(`SELECT lead_id FROM leads ORDER BY lead_id DESC LIMIT 1`);
+        console.log('Fetched lead id:');
+        console.log(result[0][0].lead_id);
+        res.status(200).json({success:true, leadid:result[0][0].lead_id});
+
+    }catch(error){
+        console.error('Error fetching lead id:', error);
+        res.status(500).json({ success: false, message: 'Failed to retrieve lead id' });
+    }
+})
 
 
 
@@ -189,6 +208,19 @@ app.get('/api/leads/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to retrieve lead' });
   }
 });
+
+
+// GET /api/partners - Fetch all partners
+app.get('/api/getpartners', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`SELECT * FROM channel_partners`);
+    res.json({ success: true, partners: rows });
+  } catch (error) {
+    console.error('Error fetching partners:', error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve partners' });
+  }
+});
+
 
 // ✅ PUT /api/leads/:id/status - update lead status
 app.put('/api/leads/:id/status', async (req, res) => {

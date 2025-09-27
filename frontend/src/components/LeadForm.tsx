@@ -46,6 +46,7 @@ const LeadForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [lastLeadId, setLastLeadId] = useState<string | null>(null);
 
   const requirementTypes = [
     'Personal Loan',
@@ -174,73 +175,85 @@ const LeadForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      toast.error('Please fix all form errors before submitting');
-      return;
-    }
-    setIsSubmitting(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) {
+    toast.error('Please fix all form errors before submitting');
+    return;
+  }
+  setIsSubmitting(true);
 
-    try {
-      const requirementToSend =
-        formData.requirementType === 'Other'
-          ? formData.customRequirementType
-          : formData.requirementType;
+  try {
+    const requirementToSend =
+      formData.requirementType === 'Other'
+        ? formData.customRequirementType
+        : formData.requirementType;
 
-      const incomeSourceToSend =
-        formData.sourceOfIncome === 'Other'
-          ? formData.customSourceOfIncome
-          : formData.sourceOfIncome;
+    const incomeSourceToSend =
+      formData.sourceOfIncome === 'Other'
+        ? formData.customSourceOfIncome
+        : formData.sourceOfIncome;
 
-      const response = await fetch('http://localhost:3001/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: formData.fullName.trim(),
-          mobileNumber: formData.mobileNumber,
-          email: formData.email.toLowerCase(),
-          pancardNumber: formData.pancardNumber.toUpperCase(),
-          aadharNumber: formData.aadharNumber,
-          areaPincode: formData.areaPincode,
-          requirementType: requirementToSend,
-          monthlyIncome: parseFloat(formData.monthlyIncome),
-          sourceOfIncome: incomeSourceToSend,
-          loanAmount: parseFloat(formData.loanAmount),
-          referralCode: formData.referralCode || null,
-        }),
-      });
+    // ✅ First API: Create lead
+    const response = await fetch('http://localhost:3001/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: formData.fullName.trim(),
+        mobileNumber: formData.mobileNumber,
+        email: formData.email.toLowerCase(),
+        pancardNumber: formData.pancardNumber.toUpperCase(),
+        aadharNumber: formData.aadharNumber,
+        areaPincode: formData.areaPincode,
+        requirementType: requirementToSend,
+        monthlyIncome: parseFloat(formData.monthlyIncome),
+        sourceOfIncome: incomeSourceToSend,
+        loanAmount: parseFloat(formData.loanAmount),
+        referralCode: formData.referralCode || null,
+      }),
+    });
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Failed to create lead');
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to create lead');
 
-      setShowSuccessDialog(true);
-      setFormData({
-        fullName: '',
-        mobileNumber: '',
-        email: '',
-        pancardNumber: '',
-        aadharNumber: '',
-        areaPincode: '',
-        requirementType: '',
-        customRequirementType: '',
-        monthlyIncome: '',
-        sourceOfIncome: '',
-        customSourceOfIncome: '',
-        loanAmount: '',
-        referralCode: '',
-        privacyPolicy: false,
-        notificationsOptIn: false,
-      });
-      setErrors({});
-      console.log('Lead submitted successfully:', result);
-    } catch (error: any) {
-      console.error('Submit error:', error);
-      toast.error(error.message || 'Failed to submit lead. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
+    // ✅ Second API: Fetch latest lead_id from DB
+    const idResponse = await fetch('http://localhost:3001/api/getid'); 
+        const idResult = await idResponse.json();
+
+        if (idResult.success) {
+          setLastLeadId(idResult.leadid); // leadid is just the value
+        }
+
+    setShowSuccessDialog(true);
+    setFormData({
+      fullName: '',
+      mobileNumber: '',
+      email: '',
+      pancardNumber: '',
+      aadharNumber: '',
+      areaPincode: '',
+      requirementType: '',
+      customRequirementType: '',
+      monthlyIncome: '',
+      sourceOfIncome: '',
+      customSourceOfIncome: '',
+      loanAmount: '',
+      referralCode: '',
+      privacyPolicy: false,
+      notificationsOptIn: false,
+    });
+    setErrors({});
+    console.log('Lead submitted successfully:', result);
+  } catch (error: any) {
+    console.error('Submit error:', error);
+    toast.error(error.message || 'Failed to submit lead. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -583,40 +596,46 @@ const LeadForm: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Dialog */}
       {showSuccessDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center">
-            <div className="mb-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center">
-                <svg 
-                  className="w-10 h-10 text-green-500" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M5 13l4 4L19 7" 
-                  />
-                </svg>
-              </div>
-            </div>
-            <h2 className="text-lg font-semibold mb-2">Your Lead has been</h2>
-            <p className="text-base text-green-500 font-semibold mb-2">Submitted Successfully</p>
-            <p className="text-sm mb-2">Sit back and Relax</p>
-            <p className="text-xs text-gray-500 mb-6">Our associate will get in touch</p>
-            <button
-              onClick={() => setShowSuccessDialog(false)}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Done
-            </button>
-          </div>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center">
+      <div className="mb-6">
+        <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center">
+          <svg 
+            className="w-10 h-10 text-green-500" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M5 13l4 4L19 7" 
+            />
+          </svg>
         </div>
-      )}
+      </div>
+      <h2 className="text-lg font-semibold mb-2">Your Quick Loan Request Form</h2>
+      <p className="text-base text-green-500 font-semibold mb-2">
+        Submitted Successfully
+      </p>
+      <p className="text-sm mb-2">
+        Your Lead ID is: <span className="font-bold">{lastLeadId}</span>
+      </p>
+      <p className="text-xs text-gray-500 mb-6">
+        Our associate will get in touch
+      </p>
+      <button
+        onClick={() => setShowSuccessDialog(false)}
+        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+      >
+        Done
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
