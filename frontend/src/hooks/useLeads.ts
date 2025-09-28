@@ -1,3 +1,4 @@
+// useLeads.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import type { Lead } from '../types';
@@ -31,24 +32,24 @@ export const useLeads = (employeeId?: string) => {
         };
 
         fetchLeads();
-
-        // No real-time subscription needed for API-based approach
     }, [employeeId]);
 
+    // 🚀 Updated uploadCSV: send file to backend
     const uploadCSV = async (file: File) => {
-        try {
-            const { processCSVFile } = await import('../services/csvProcessor');
-            const result = await processCSVFile(file);
-            
-            // Refresh leads after upload
-            const { data } = await supabase.from('unikleadsapi').select('*').order('Date', { ascending: false });
-            setLeads(data || []);
-            
-            return result;
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Upload failed');
-            throw err;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('http://localhost:3001/api/assignedleads/upload-csv', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to upload CSV');
         }
+
+        const result = await response.json();
+        return result; // contains inserted count, failed rows etc.
     };
 
     return {

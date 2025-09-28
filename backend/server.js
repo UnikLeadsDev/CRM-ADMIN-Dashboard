@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,6 +29,7 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use('/api/assignedleads', AssignedRoute);
 
 const pool = mysql.createPool({
   host: 'channelpartner.cwniws4uuerg.us-east-1.rds.amazonaws.com',
