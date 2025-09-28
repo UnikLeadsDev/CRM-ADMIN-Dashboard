@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
 import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,6 +34,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api/assignedleads', AssignedRoute);
+// Ensure uploads folder exists
+const uploadPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+}
+// Serve uploaded files publicly
+app.use('/uploads', express.static(uploadPath));
 
 const pool = mysql.createPool({
   host: 'channelpartner.cwniws4uuerg.us-east-1.rds.amazonaws.com',
@@ -170,9 +181,6 @@ app.get('/api/getid', async (req, res) => {
     }
 })
 
-
-
-
 // ✅ GET /api/getleads - fetch all leads
 app.get('/api/getleads', async (req, res) => {
   try {
@@ -210,19 +218,6 @@ app.get('/api/leads/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to retrieve lead' });
   }
 });
-
-
-// GET /api/partners - Fetch all partners
-app.get('/api/getpartners', async (req, res) => {
-  try {
-    const [rows] = await pool.query(`SELECT * FROM channel_partners`);
-    res.json({ success: true, partners: rows });
-  } catch (error) {
-    console.error('Error fetching partners:', error);
-    res.status(500).json({ success: false, message: 'Failed to retrieve partners' });
-  }
-});
-
 
 // ✅ PUT /api/leads/:id/status - update lead status
 app.put('/api/leads/:id/status', async (req, res) => {
@@ -267,11 +262,207 @@ app.get('/test-db', async (req, res) => {
     }
 });
 
-// --- API ENDPOINTS ---
+//These are Channel Partner APIS
 
-/**
- * GET /api/partners/:id
- */
+// Multer storage setup (now using absolute path)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.fieldname + path.extname(file.originalname));
+    },
+});
+const upload = multer({ storage });
+
+// POST /api/partner-documents
+app.post(
+  "/api/partner-documents",
+  upload.fields([
+    { name: "pan_card", maxCount: 1 },
+    { name: "aadhaar_front", maxCount: 1 },
+    { name: "aadhaar_back", maxCount: 1 },
+    { name: "applicant_photo", maxCount: 1 },
+    { name: "credit_report", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      // ✅ Validate partner_id
+      const partner_id = parseInt(req.body.partner_id);
+      if (isNaN(partner_id)) {
+        return res.status(400).json({ message: "Invalid partner_id" });
+      }
+
+      // ✅ Build file URLs
+      const pan_card_url = req.files["pan_card"]
+        ? `/uploads/${req.files["pan_card"][0].filename}`
+        : null;
+
+      const aadhaar_front_url = req.files["aadhaar_front"]
+        ? `/uploads/${req.files["aadhaar_front"][0].filename}`
+        : null;
+
+      const aadhaar_back_url = req.files["aadhaar_back"]
+        ? `/uploads/${req.files["aadhaar_back"][0].filename}`
+        : null;
+
+      const applicant_photo_url = req.files["applicant_photo"]
+        ? `/uploads/${req.files["applicant_photo"][0].filename}`
+        : null;
+
+      const credit_report_url = req.files["credit_report"]
+        ? `/uploads/${req.files["credit_report"][0].filename}`
+        : null;
+
+      // ✅ Insert into DB
+      const query = `
+        INSERT INTO partner_documents 
+        (partner_id, pan_card_url, aadhaar_front_url, aadhaar_back_url, applicant_photo_url, credit_report_url) 
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+
+      const [result] = await dbPool.execute(query, [
+        partner_id,
+        pan_card_url,
+        aadhaar_front_url,
+        aadhaar_back_url,
+        applicant_photo_url,
+        credit_report_url,
+      ]);
+
+      res.status(201).json({
+        message: "Documents uploaded successfully",
+        document_id: result.insertId,
+        partner_id,
+        pan_card_url,
+        aadhaar_front_url,
+        aadhaar_back_url,
+        applicant_photo_url,
+        credit_report_url,
+      });
+    } catch (error) {
+      console.error("Error uploading documents:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
+
+// GET /api/partners - Fetch all partners
+app.get('/api/getpartners', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`SELECT * FROM channel_partners`);
+    res.json({ success: true, partners: rows });
+  } catch (error) {
+    console.error('Error fetching partners:', error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve partners' });
+  }
+});
+
+// POST /api/addpartner
+app.post('/api/addpartner', async (req, res) => {
+    try {
+        const data = req.body;
+        const query = `INSERT INTO channel_partners (
+            application_reference_id, application_date, application_ref_by, applicant_class,
+            first_name, middle_name, last_name, father_name, date_of_birth, gender,
+            aadhar_number, pan_card_number, mobile_number, email_id, marital_status, spouse_name,
+            mother_name, education, occupation, applicant_photo_url, applicant_credit_report_url,
+            current_address1, current_address2, current_pincode, current_state, current_district,
+            current_city, current_locality, current_landmark,
+            permanent_address, permanent_address2, permanent_pincode, permanent_state, permanent_district,
+            permanent_city, permanant_locality, permanent_landmark,
+            bank_name, account_holder_name, bank_account_number, ifsc_code, branch_name,
+            bank_account_type, applicant_details_status, current_address_status, permanent_address_status,
+            kyc_documents_status, banking_details_status,
+            applicant_details_reason, current_address_reason, permanent_address_reason,
+            kyc_documents_reason, banking_details_reason,
+            final_decision, final_decision_reason,
+            authorized_person_signature_url, digital_otp, lc_code, uc_code,
+            authorized_person_name, authorized_person_designation, authorized_person_employee_id, approval_date
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+        const values = [
+            data.application_reference_id,
+            data.application_date || new Date(),
+            data.application_ref_by,
+            data.applicant_class,
+            data.first_name,
+            data.middle_name,
+            data.last_name,
+            data.father_name,
+            data.date_of_birth,
+            data.gender,
+            data.aadhar_number,
+            data.pan_card_number,
+            data.mobile_number,
+            data.email_id,
+            data.marital_status,
+            data.spouse_name,
+            data.mother_name,
+            data.education,
+            data.occupation,
+            data.applicant_photo_url,
+            data.applicant_credit_report_url,
+            data.current_address1,
+            data.current_address2,
+            data.current_pincode,
+            data.current_state,
+            data.current_district,
+            data.current_city,
+            data.current_locality,
+            data.current_landmark,
+            data.permanent_address,
+            data.permanent_address2,
+            data.permanent_pincode,
+            data.permanent_state,
+            data.permanent_district,
+            data.permanent_city,
+            data.permanant_locality,
+            data.permanent_landmark,
+            data.bank_name,
+            data.account_holder_name,
+            data.bank_account_number,
+            data.ifsc_code,
+            data.branch_name,
+            data.bank_account_type || 'Saving',
+            data.applicant_details_status || 'Pending',
+            data.current_address_status || 'Pending',
+            data.permanent_address_status || 'Pending',
+            data.kyc_documents_status || 'Pending',
+            data.banking_details_status || 'Pending',
+            data.applicant_details_reason,
+            data.current_address_reason,
+            data.permanent_address_reason,
+            data.kyc_documents_reason,
+            data.banking_details_reason,
+            data.final_decision || 'Pending',
+            data.final_decision_reason,
+            data.authorized_person_signature_url,
+            data.digital_otp,
+            data.lc_code,
+            data.uc_code,
+            data.authorized_person_name,
+            data.authorized_person_designation,
+            data.authorized_person_employee_id,
+            data.approval_date || null
+        ];
+
+        const [result] = await dbPool.query(query, values);
+        res.status(201).json({
+            message: "Partner application submitted successfully",
+            partner_id: result.insertId,
+            application_reference_id: data.application_reference_id
+
+        });
+
+    } catch (error) {
+        console.error("Error inserting partner:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+});
+
+//GET /api/partners/:id
+ 
 app.get('/api/partners/:id', async (req, res) => {
     const partnerId = req.params.id;
     try {
@@ -289,9 +480,8 @@ app.get('/api/partners/:id', async (req, res) => {
     }
 });
 
-/**
- * PATCH /api/partners/:id/decision
- */
+//PATCH /api/partners/:id/decision
+ 
 app.patch('/api/partners/:id/decision', async (req, res) => {
     const partnerId = req.params.id;
     const { final_decision, final_decision_reason } = req.body;
@@ -311,9 +501,8 @@ app.patch('/api/partners/:id/decision', async (req, res) => {
     }
 });
 
-/**
- * PATCH /api/partners/:id/section-status
- */
+// PATCH /api/partners/:id/section-status
+
 app.patch('/api/partners/:id/section-status', async (req, res) => {
     const partnerId = req.params.id;
     const { section, status, reason } = req.body;
