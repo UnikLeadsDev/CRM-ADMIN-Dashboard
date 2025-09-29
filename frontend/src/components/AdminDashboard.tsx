@@ -8,6 +8,8 @@ import { useLeads } from '../hooks/useLeads';
 import LeadForm from './LeadForm'; // ⬅️ Import the LeadForm component
 import ChannelPartnerForm from './ChannelPartnerForm';
 import ChannelPartnerApplicationDashboard from './ChannelPartner/ChannelPartnerApplicationDashboard';
+import PersonalDetails from './ChannelPartner/PersonalDetails';
+import BusinessDashboard from './ChannelPartner/BusinessDashboard';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -105,6 +107,8 @@ export const AdminDashboard = () => {
           <Tab label="➕ Add Lead" /> {/* ⬅️ New Tab */}
           <Tab label="💼 Channel Partner" />
           <Tab label="💼 Channel Partner Application Dashboard" />
+          <Tab label="💼 Channel Partner Personal Details" />
+          <Tab label="💼 Channel Partner Business Details" />
         </Tabs>
       </Paper>
 
@@ -164,6 +168,16 @@ export const AdminDashboard = () => {
           {/* Tab 6 */}
           <TabPanel value={tabValue} index={5}>
             <ChannelPartnerApplicationDashboard />
+          </TabPanel>
+
+          {/* Tab 7 */}
+          <TabPanel value={tabValue} index={6}>
+            <PersonalDetails />
+          </TabPanel>
+
+          {/* Tab 8 */}
+          <TabPanel value={tabValue} index={7}>
+            <BusinessDashboard />
           </TabPanel>
         </Paper>
       </Box>
