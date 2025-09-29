@@ -1,45 +1,85 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Stack, Typography, CircularProgress, TextField, Select, MenuItem,
   FormControl, InputLabel, Chip, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, TablePagination, Box
+  TableContainer, TableHead, TableRow, Paper, TablePagination, Box, IconButton
 } from '@mui/material';
-import { apiClient } from '../services/apiClient';
-import type { Lead } from '../types';
+import { Edit as EditIcon } from '@mui/icons-material';
+import axios from 'axios';
 
-interface LeadsTableViewProps {
-  leads: Lead[];
-  loading: boolean;
-  error: string | null;
+interface Lead {
+  id: number;
+  date: string;
+  name: string;
+  phone: string;
+  email: string;
+  product: string;
+  city: string;
+  assigned_to: string;
+  status: 'open' | 'in_process' | 'closed' | 'not_interested';
 }
 
-export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) => {
+export const LeadsTableView = () => {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [reassigning, setReassigning] = useState<{[key: number]: boolean}>({});
+
+  const [editingLeadId, setEditingLeadId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:3001/api/getassignleads");
+        if (res.data.success) {
+          setLeads(res.data.leads);
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to load leads");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, []);
+
+  const handleReassign = async (leadId: number, newEmployee: string) => {
+    try {
+      await axios.put(`http://localhost:3001/api/leads/reassign/${leadId}`, {
+        assigned_to: newEmployee,
+      });
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === leadId ? { ...lead, assigned_to: newEmployee } : lead
+        )
+      );
+      setEditingLeadId(null);
+    } catch (err: any) {
+      console.error("Reassign failed", err);
+    }
+  };
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      const matchesSearch = !search || 
-        lead['Customer Name']?.toLowerCase().includes(search.toLowerCase()) ||
-        lead['Mobile Number']?.includes(search) ||
-        lead['Email ID']?.toLowerCase().includes(search.toLowerCase());
-      
-      // Handle status filtering - check for exact match or null/undefined for 'open'
+      const matchesSearch = !search ||
+        lead.name.toLowerCase().includes(search.toLowerCase()) ||
+        lead.phone.includes(search) ||
+        lead.email.toLowerCase().includes(search.toLowerCase());
+
       let matchesStatus = false;
-      if (statusFilter === 'all') {
-        matchesStatus = true;
-      } else if (statusFilter === 'open') {
-        matchesStatus = !lead.status || lead.status === 'open';
-      } else {
-        matchesStatus = lead.status === statusFilter;
-      }
-      
-      const matchesEmployee = employeeFilter === 'all' || lead['Assigned to Lead Employee ID'] === employeeFilter;
-      
+      if (statusFilter === 'all') matchesStatus = true;
+      else if (statusFilter === 'open') matchesStatus = !lead.status || lead.status === 'open';
+      else matchesStatus = lead.status === statusFilter;
+
+      const matchesEmployee = employeeFilter === 'all' || lead.assigned_to === employeeFilter;
+
       return matchesSearch && matchesStatus && matchesEmployee;
     });
   }, [leads, search, statusFilter, employeeFilter]);
@@ -50,7 +90,7 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
   }, [filteredLeads, page, rowsPerPage]);
 
   const uniqueEmployees = useMemo(() => {
-    const employees = new Set(leads.map(lead => lead['Assigned to Lead Employee ID']).filter(Boolean));
+    const employees = new Set(leads.map(lead => lead.assigned_to).filter(Boolean));
     return Array.from(employees);
   }, [leads]);
 
@@ -61,19 +101,6 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
       case 'closed': return 'success';
       case 'not_interested': return 'error';
       default: return 'default';
-    }
-  };
-
-  const handleReassign = async (lead: Lead, newEmployeeId: string, index: number) => {
-    setReassigning(prev => ({ ...prev, [index]: true }));
-    try {
-      await apiClient.reassignLead(lead, newEmployeeId);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error reassigning lead:', error);
-      alert('Failed to reassign lead');
-    } finally {
-      setReassigning(prev => ({ ...prev, [index]: false }));
     }
   };
 
@@ -97,7 +124,7 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
   if (leads.length === 0) {
     return (
       <Stack alignItems="center" py={4}>
-        <Typography>No leads found. Upload a CSV file to get started.</Typography>
+        <Typography>No leads found.</Typography>
       </Stack>
     );
   }
@@ -105,6 +132,7 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <Stack spacing={2}>
+        {/* Filters */}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: '100%' }}>
           <TextField
             placeholder="Search..."
@@ -118,81 +146,76 @@ export const LeadsTableView = ({ leads, loading, error }: LeadsTableViewProps) =
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} label="Status">
               <MenuItem value="all">All</MenuItem>
               <MenuItem value="open">Open</MenuItem>
-              <MenuItem value="in_process">Process</MenuItem>
+              <MenuItem value="in_process">In Process</MenuItem>
               <MenuItem value="closed">Closed</MenuItem>
-              <MenuItem value="not_interested">Not Int.</MenuItem>
+              <MenuItem value="not_interested">Not Interested</MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <InputLabel>Employee</InputLabel>
             <Select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} label="Employee">
               <MenuItem value="all">All</MenuItem>
-              <MenuItem value="">None</MenuItem>
               {uniqueEmployees.map(emp => (
                 <MenuItem key={emp} value={emp}>{emp}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </Stack>
-        
+
+        {/* Leads Table */}
         <Paper sx={{ width: '100%', overflow: 'hidden' }}>
           <TableContainer sx={{ maxHeight: 600, width: '100%' }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Date</TableCell>
+                  <TableCell>Date</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Phone</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Email</TableCell>
+                  <TableCell>Email</TableCell>
                   <TableCell>Product</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>City</TableCell>
+                  <TableCell>City</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Reassign</TableCell>
                   <TableCell>Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedLeads.map((lead, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{new Date(lead['Date']).toLocaleDateString()}</TableCell>
-                    <TableCell>{lead['Customer Name']}</TableCell>
-                    <TableCell>{lead['Mobile Number']}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{lead['Email ID']}</TableCell>
-                    <TableCell>{lead['Product looking']}</TableCell>
-                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{lead['Customer City']}</TableCell>
+                {paginatedLeads.map((lead) => (
+                  <TableRow key={lead.id} hover>
+                    <TableCell>{new Date(lead.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{lead.name}</TableCell>
+                    <TableCell>{lead.phone}</TableCell>
+                    <TableCell>{lead.email}</TableCell>
+                    <TableCell>{lead.product}</TableCell>
+                    <TableCell>{lead.city}</TableCell>
                     <TableCell>
-                      {lead['Assigned to Lead Employee ID'] ? (
-                        <Chip 
-                          label={lead['Assigned to Lead Employee ID']} 
-                          color="primary" 
+                      {editingLeadId === lead.id ? (
+  <FormControl size="small" sx={{ minWidth: 120 }}>
+    <Select
+      value={lead.assigned_to || ''}
+      onChange={(e) => handleReassign(lead.id, e.target.value)}
+      onBlur={() => setEditingLeadId(null)} // closes after selection
+    >
+      {uniqueEmployees.map((emp) => (
+        <MenuItem key={emp} value={emp}>{emp}</MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+                    ) : (
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Chip
+                          label={lead.assigned_to || "Unassigned"}
+                          color={lead.assigned_to ? "primary" : "default"}
                           size="small"
+                          onClick={() => setEditingLeadId(lead.id)} // 👈 enable editing
+                          sx={{ cursor: "pointer" }}
                         />
-                      ) : (
-                        <Chip 
-                          label="Unassigned" 
-                          color="default" 
-                          size="small"
-                        />
-                      )}
+                      </Stack>
+                    )}
+
                     </TableCell>
                     <TableCell>
-                      <FormControl size="small" sx={{ minWidth: 80 }}>
-                        <Select
-                          value={lead['Assigned to Lead Employee ID'] || ''}
-                          onChange={(e) => handleReassign(lead, e.target.value, index)}
-                          disabled={reassigning[index]}
-                          displayEmpty
-                        >
-                          <MenuItem value="">None</MenuItem>
-                          {uniqueEmployees.map(emp => (
-                            <MenuItem key={emp} value={emp}>{emp}</MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={lead.status || 'open'} 
+                      <Chip
+                        label={lead.status || 'open'}
                         color={getStatusColor(lead.status || 'open')}
                         size="small"
                       />

@@ -138,7 +138,7 @@ export const AdminDashboard = () => {
           <TabPanel value={tabValue} index={0}>
             <Stack spacing={3}>
               <CSVUpload />
-              <LeadsTableView leads={leads} loading={loading} error={error} />
+              <LeadsTableView />
             </Stack>
           </TabPanel>
 

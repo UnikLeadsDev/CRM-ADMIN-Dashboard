@@ -6,7 +6,18 @@ import {
   Paper, CircularProgress, Select, MenuItem, FormControl,
   InputLabel
 } from '@mui/material';
-import type { Lead } from '../types';
+
+export interface Lead {
+  id: number;
+  date: string;
+  name: string;
+  phone: string;
+  email: string;
+  product: string;
+  city: string;
+  assigned_to: string;
+  status: 'open' | 'in_process' | 'closed' | 'not_interested';
+}
 
 interface EmployeeLeads {
   employee_id: string;
@@ -27,11 +38,12 @@ export const LeadsAssignedReport = () => {
     try {
       setLoading(true);
 
-      // 👇 Call your backend API directly
-      const res = await axios.get("http://localhost:3001/api/leads/getassignleads");
+      // 👇 Call your backend API
+      const res = await axios.get("http://localhost:3001/api/getassignleads");
+      console.log('API response:', res.data);
 
       if (res.data.success && res.data.leads) {
-        // Group leads by employee
+        // Group leads by employee_id
         const grouped: Record<string, Lead[]> = {};
         res.data.leads.forEach((lead: Lead) => {
           if (!grouped[lead.assigned_to]) {
@@ -49,6 +61,7 @@ export const LeadsAssignedReport = () => {
         );
 
         setAssignments(formatted);
+        console.log('Loaded assignments:', formatted);
       }
     } catch (error) {
       console.error('Error loading assignments:', error);
@@ -59,7 +72,6 @@ export const LeadsAssignedReport = () => {
 
   const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
     try {
-      // 👇 Update directly using backend route
       await axios.put(`http://localhost:3001/api/leads/${lead.id}/status`, { status });
       loadAssignments();
     } catch (error) {
@@ -130,7 +142,7 @@ export const LeadsAssignedReport = () => {
         </Card>
       </Box>
 
-      {/* Filter */}
+      {/* Employee Filter */}
       <Box sx={{ mb: 3 }}>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Filter by Employee</InputLabel>
@@ -149,7 +161,7 @@ export const LeadsAssignedReport = () => {
         </FormControl>
       </Box>
 
-      {/* Assignments Table */}
+      {/* Employee-wise Lead Tables */}
       {filteredAssignments.map(assignment => (
         <Card key={assignment.employee_id} sx={{ mb: 3 }}>
           <CardContent>
@@ -186,7 +198,7 @@ export const LeadsAssignedReport = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <FormControl size="small" sx={{ minWidth: 140 }}>
                           <Select
                             value={lead.status || 'open'}
                             onChange={(e) =>

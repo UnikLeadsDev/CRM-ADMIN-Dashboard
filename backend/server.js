@@ -10,6 +10,7 @@ import fs from 'fs';
 
 import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
 import getAssignedLeadRoute from './routes/AssignleadsAPI/getassignedleadRoutes.js';
+import reassignRoutes from './routes/AssignleadsAPI/reassigendRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,6 +37,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api/assignedleads', AssignedRoute);
 app.use('/api', getAssignedLeadRoute);
+app.use('/api', reassignRoutes);
 // Ensure uploads folder exists
 const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
@@ -230,7 +232,7 @@ app.put('/api/leads/:id/status', async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `UPDATE leads SET lead_status = ?, updated_at = NOW() WHERE lead_id = ?`,
+      `UPDATE assignedleads SET status = ? WHERE id = ?`,
       [status, req.params.id]
     );
 

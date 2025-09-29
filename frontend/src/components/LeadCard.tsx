@@ -1,151 +1,83 @@
 import { Card, CardContent, CardActions, Typography, Button, Chip, Stack } from '@mui/material';
 import { Call as CallIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
 import type { Lead } from '../types';
+import { apiClient } from '../services/apiClient';
 
 interface LeadCardProps {
-    lead: Lead;
+  lead: Lead;
+  onStatusChange: (lead: Lead, status: Lead['status']) => void;
 }
 
-export const LeadCard = ({ lead }: LeadCardProps) => {
-    const handleCall = () => {
-        window.location.href = `tel:${lead['Mobile Number']}`;
-    };
+export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
+  const handleCall = () => {
+    window.location.href = `tel:${lead.phone}`;
+  };
 
-    const handleWhatsApp = () => {
-        const whatsappUrl = `https://wa.me/${lead['Mobile Number']}`;
-        window.open(whatsappUrl, '_blank');
-    };
+  const handleWhatsApp = () => {
+    window.open(`https://wa.me/${lead.phone}`, '_blank');
+  };
 
-    const getStatusColor = (status: string): "success" | "warning" | "error" | "primary" => {
-        switch (status) {
-            case 'Hot Lead':
-                return 'error';
-            case 'Warm Lead':
-                return 'warning';
-            case 'Cold Lead':
-                return 'success';
-            case 'open':
-                return 'primary';
-            case 'in_process':
-                return 'warning';
-            case 'closed':
-                return 'success';
-            case 'not_interested':
-                return 'error';
-            default:
-                return 'warning';
-        }
-    };
+  const handleStatusUpdate = async (status: Lead['status']) => {
+    try {
+      await apiClient.updateLeadStatus(lead, status);
+      onStatusChange(lead, status);
+    } catch (err) {
+      alert('Failed to update status');
+      console.error(err);
+    }
+  };
 
-    return (
-        <Card sx={{ width: '100%', maxWidth: 400, mb: 2 }}>
-            <CardContent>
-                <Stack spacing={2}>
-                    <Stack 
-                        direction="row" 
-                        justifyContent="space-between" 
-                        alignItems="center"
-                    >
-                        <Typography variant="h6">
-                            {lead['Customer Name']}
-                        </Typography>
-                        <Chip 
-                            label={lead['Type of Lead']}
-                            color={getStatusColor(lead['Type of Lead'])}
-                            size="small"
-                        />
-                    </Stack>
+  const getStatusColor = (status: Lead['status']) => {
+    switch (status) {
+      case 'open': return 'primary';
+      case 'in_process': return 'warning';
+      case 'closed': return 'success';
+      case 'not_interested': return 'error';
+      default: return 'default';
+    }
+  };
 
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            Mobile Number
-                        </Typography>
-                        <Typography variant="body1">
-                            {lead['Mobile Number']}
-                        </Typography>
-                    </Stack>
+  return (
+    <Card sx={{ height: 280, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flex: 1 }}>
+        <Stack spacing={1}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">{lead.name}</Typography>
+            <Chip label={lead.status} color={getStatusColor(lead.status)} size="small" />
+          </Stack>
+          <Typography variant="body2">📱 {lead.phone}</Typography>
+          <Typography variant="body2">✉️ {lead.email}</Typography>
+          <Typography variant="body2">🏷️ {lead.product}</Typography>
+          <Typography variant="body2">📍 {lead.city}</Typography>
+          {lead.assigned_to && <Typography variant="body2">👤 {lead.assigned_to}</Typography>}
+          <Typography variant="caption">📅 {new Date(lead.date).toLocaleDateString()}</Typography>
+        </Stack>
+      </CardContent>
 
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            Email
-                        </Typography>
-                        <Typography variant="body1">
-                            {lead['Email ID']}
-                        </Typography>
-                    </Stack>
+      <CardActions sx={{ p: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
+          <Button variant="contained" size="small" fullWidth onClick={handleCall}>
+            <CallIcon sx={{ fontSize: 16, mr: 0.5 }} />Call
+          </Button>
+          <Button variant="contained" color="success" size="small" fullWidth onClick={handleWhatsApp}>
+            <WhatsAppIcon sx={{ fontSize: 16, mr: 0.5 }} />WhatsApp
+          </Button>
+        </Stack>
+      </CardActions>
 
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            Product
-                        </Typography>
-                        <Typography variant="body1">
-                            {lead['Product looking']}
-                        </Typography>
-                    </Stack>
-
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            City
-                        </Typography>
-                        <Typography variant="body1">
-                            {lead['Customer City']}
-                        </Typography>
-                    </Stack>
-
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            Upload Date
-                        </Typography>
-                        <Typography variant="body1">
-                            {new Date(lead['Date']).toLocaleString()}
-                        </Typography>
-                    </Stack>
-
-                    {lead['Assigned to Lead Employee ID'] && (
-                        <Stack spacing={1}>
-                            <Typography color="text.secondary" variant="caption">
-                                Assigned to
-                            </Typography>
-                            <Typography variant="body1">
-                                {lead['Assigned to Lead Employee ID']}
-                            </Typography>
-                        </Stack>
-                    )}
-
-                    <Stack spacing={1}>
-                        <Typography color="text.secondary" variant="caption">
-                            Status
-                        </Typography>
-                        <Chip 
-                            label={lead.status || 'open'}
-                            color={getStatusColor(lead.status || 'open')}
-                            size="small"
-                        />
-                    </Stack>
-                </Stack>
-            </CardContent>
-
-            <CardActions sx={{ p: 2 }}>
-                <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
-                    <Button
-                        variant="contained"
-                        startIcon={<CallIcon />}
-                        onClick={handleCall}
-                        fullWidth
-                    >
-                        Call
-                    </Button>
-                    <Button
-                        variant="contained"
-                        startIcon={<WhatsAppIcon />}
-                        color="success"
-                        onClick={handleWhatsApp}
-                        fullWidth
-                    >
-                        WhatsApp
-                    </Button>
-                </Stack>
-            </CardActions>
-        </Card>
-    );
+      {/* Status Update */}
+      <Stack sx={{ p: 1 }}>
+        <select
+          value={lead.status}
+          onChange={e => handleStatusUpdate(e.target.value as Lead['status'])}
+          style={{ width: '100%', padding: '4px' }}
+        >
+          <option value="open">Open</option>
+          <option value="in_process">In Process</option>
+          <option value="closed">Closed</option>
+          <option value="not_interested">Not Interested</option>
+        </select>
+      </Stack>
+    </Card>
+  );
 };
