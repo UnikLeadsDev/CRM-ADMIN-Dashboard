@@ -29,6 +29,10 @@ export const LeadsTableView = () => {
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [dateFilter, setDateFilter] = useState('');
+  const [productFilter, setProductFilter] = useState('all');
+  const [cityFilter, setCityFilter] = useState('all');
+
 
   const [editingLeadId, setEditingLeadId] = useState<number | null>(null);
 
@@ -80,9 +84,13 @@ export const LeadsTableView = () => {
 
       const matchesEmployee = employeeFilter === 'all' || lead.assigned_to === employeeFilter;
 
-      return matchesSearch && matchesStatus && matchesEmployee;
+      const matchesDate = !dateFilter || lead.date === dateFilter;
+      const matchesProduct = productFilter === 'all' || lead.product === productFilter;
+      const matchesCity = cityFilter === 'all' || lead.city === cityFilter;
+
+      return matchesSearch && matchesStatus && matchesEmployee && matchesDate && matchesProduct && matchesCity;
     });
-  }, [leads, search, statusFilter, employeeFilter]);
+  }, [leads, search, statusFilter, employeeFilter, dateFilter, productFilter, cityFilter]);
 
   const paginatedLeads = useMemo(() => {
     const start = page * rowsPerPage;
@@ -92,7 +100,7 @@ export const LeadsTableView = () => {
   const uniqueEmployees = useMemo(() => {
     const employees = new Set(leads.map(lead => lead.assigned_to).filter(Boolean));
     return Array.from(employees);
-  }, [leads]);
+  }, [leads, search, statusFilter, employeeFilter, dateFilter, productFilter, cityFilter]);
 
   const getStatusColor = (status: Lead['status']) => {
     switch (status) {
@@ -141,6 +149,42 @@ export const LeadsTableView = () => {
             size="small"
             sx={{ flex: 1 }}
           />
+          <TextField
+            type="date"
+            size="small"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            sx={{ minWidth: 120 }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Product</InputLabel>
+            <Select
+              value={productFilter}
+              onChange={(e) => setProductFilter(e.target.value)}
+              label="Product"
+            >
+              <MenuItem value="all">All</MenuItem>
+              {Array.from(new Set(leads.map(lead => lead.product))).map((prod) => (
+                <MenuItem key={prod} value={prod}>{prod}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>City</InputLabel>
+            <Select
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              label="City"
+            >
+              <MenuItem value="all">All</MenuItem>
+              {Array.from(new Set(leads.map(lead => lead.city))).map((city) => (
+                <MenuItem key={city} value={city}>{city}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} label="Status">
@@ -189,28 +233,28 @@ export const LeadsTableView = () => {
                     <TableCell>{lead.city}</TableCell>
                     <TableCell>
                       {editingLeadId === lead.id ? (
-  <FormControl size="small" sx={{ minWidth: 120 }}>
-    <Select
-      value={lead.assigned_to || ''}
-      onChange={(e) => handleReassign(lead.id, e.target.value)}
-      onBlur={() => setEditingLeadId(null)} // closes after selection
-    >
-      {uniqueEmployees.map((emp) => (
-        <MenuItem key={emp} value={emp}>{emp}</MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-                    ) : (
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Chip
-                          label={lead.assigned_to || "Unassigned"}
-                          color={lead.assigned_to ? "primary" : "default"}
-                          size="small"
-                          onClick={() => setEditingLeadId(lead.id)} // 👈 enable editing
-                          sx={{ cursor: "pointer" }}
-                        />
-                      </Stack>
-                    )}
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <Select
+                            value={lead.assigned_to || ''}
+                            onChange={(e) => handleReassign(lead.id, e.target.value)}
+                            onBlur={() => setEditingLeadId(null)} // closes after selection
+                          >
+                            {uniqueEmployees.map((emp) => (
+                              <MenuItem key={emp} value={emp}>{emp}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      ) : (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Chip
+                            label={lead.assigned_to || "Unassigned"}
+                            color={lead.assigned_to ? "primary" : "default"}
+                            size="small"
+                            onClick={() => setEditingLeadId(lead.id)} // 👈 enable editing
+                            sx={{ cursor: "pointer" }}
+                          />
+                        </Stack>
+                      )}
 
                     </TableCell>
                     <TableCell>
