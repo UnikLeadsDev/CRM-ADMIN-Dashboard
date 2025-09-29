@@ -9,6 +9,7 @@ import path from 'path';
 import fs from 'fs';
 
 import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
+import getAssignedLeadRoute from './routes/AssignleadsAPI/getassignedleadRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +35,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api/assignedleads', AssignedRoute);
+app.use('/api', getAssignedLeadRoute);
 // Ensure uploads folder exists
 const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {

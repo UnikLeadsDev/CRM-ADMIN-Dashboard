@@ -1,15 +1,13 @@
 export interface Lead {
-    id?: string;
-    'Assigned to Lead Employee ID': string;
-    'Customer Name': string;
-    'Mobile Number': string;
-    'Product looking': string;
-    'Type of Lead': string;
-    'Customer City': string;
-    'Email ID': string;
-    'Date': string;
-    status: 'open' | 'in_process' | 'closed' | 'not_interested';
-    assigned_at?: string;
+  id: number;
+  date: string;
+  name: string;
+  phone: string;
+  email: string;
+  product: string;
+  city: string;
+  assigned_to: string;
+  status: 'open' | 'in_process' | 'closed' | 'not_interested';
 }
 
 export interface LeadAssignment {

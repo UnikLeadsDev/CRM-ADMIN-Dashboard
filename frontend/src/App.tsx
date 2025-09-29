@@ -14,8 +14,9 @@ function App() {
         <Route path="/leads" element={<LeadsOnly />} />
         <Route path="/lead" element={<LeadsOnly />} />
         <Route path="/leadform" element={<LeadForm />} />
-        <Route path="/channelpartnerform" element={<ChannelPartnerForm />} />
+        <Route path="/partner/:partnerId" element={<ChannelPartnerForm />} />
         <Route path="/" element={<Navigate to="/admin" replace />} />
+
       </Routes>
     </Router>
   )

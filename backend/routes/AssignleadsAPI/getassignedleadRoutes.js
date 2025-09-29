@@ -31,4 +31,27 @@ router.get('/leads/:employeeId', async (req, res) => {
   }
 });
 
+// Get all leads
+router.get('/getassignleads', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.query(
+      `SELECT * FROM assignedleads ORDER BY date DESC`
+    );
+
+    connection.release();
+
+    res.json({
+      success: true,
+      totalLeads: rows.length,
+      leads: rows
+    });
+  } catch (error) {
+    console.error('Error fetching all leads:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
 export default router;

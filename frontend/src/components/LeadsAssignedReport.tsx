@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Typography, Card, CardContent, Box, Chip,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, CircularProgress, Select, MenuItem, FormControl,
   InputLabel
 } from '@mui/material';
-import { leadAssignmentService } from '../services/leadAssignmentService';
-import type { LeadAssignment, Lead } from '../types';
+import type { Lead } from '../types';
+
+interface EmployeeLeads {
+  employee_id: string;
+  lead_count: number;
+  leads: Lead[];
+}
 
 export const LeadsAssignedReport = () => {
-  const [assignments, setAssignments] = useState<LeadAssignment[]>([]);
+  const [assignments, setAssignments] = useState<EmployeeLeads[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState<string>('all');
 
@@ -20,8 +26,30 @@ export const LeadsAssignedReport = () => {
   const loadAssignments = async () => {
     try {
       setLoading(true);
-      const data = await leadAssignmentService.getLeadAssignments();
-      setAssignments(data);
+
+      // 👇 Call your backend API directly
+      const res = await axios.get("http://localhost:3001/api/leads/getassignleads");
+
+      if (res.data.success && res.data.leads) {
+        // Group leads by employee
+        const grouped: Record<string, Lead[]> = {};
+        res.data.leads.forEach((lead: Lead) => {
+          if (!grouped[lead.assigned_to]) {
+            grouped[lead.assigned_to] = [];
+          }
+          grouped[lead.assigned_to].push(lead);
+        });
+
+        const formatted: EmployeeLeads[] = Object.entries(grouped).map(
+          ([employee_id, leads]) => ({
+            employee_id,
+            lead_count: leads.length,
+            leads
+          })
+        );
+
+        setAssignments(formatted);
+      }
     } catch (error) {
       console.error('Error loading assignments:', error);
     } finally {
@@ -31,7 +59,8 @@ export const LeadsAssignedReport = () => {
 
   const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
     try {
-      await leadAssignmentService.updateLeadStatus(lead, status);
+      // 👇 Update directly using backend route
+      await axios.put(`http://localhost:3001/api/leads/${lead.id}/status`, { status });
       loadAssignments();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -48,8 +77,8 @@ export const LeadsAssignedReport = () => {
     }
   };
 
-  const filteredAssignments = selectedEmployee === 'all' 
-    ? assignments 
+  const filteredAssignments = selectedEmployee === 'all'
+    ? assignments
     : assignments.filter(a => a.employee_id === selectedEmployee);
 
   const totalLeads = assignments.reduce((sum, a) => sum + a.lead_count, 0);
@@ -127,7 +156,7 @@ export const LeadsAssignedReport = () => {
             <Typography variant="h6" gutterBottom>
               Employee ID: {assignment.employee_id} ({assignment.lead_count} leads)
             </Typography>
-            
+
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -142,16 +171,16 @@ export const LeadsAssignedReport = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {assignment.leads.map((lead, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{lead['Customer Name']}</TableCell>
-                      <TableCell>{lead['Mobile Number']}</TableCell>
-                      <TableCell>{lead['Email ID']}</TableCell>
-                      <TableCell>{lead['Product looking']}</TableCell>
-                      <TableCell>{lead['Customer City']}</TableCell>
+                  {assignment.leads.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell>{lead.name}</TableCell>
+                      <TableCell>{lead.phone}</TableCell>
+                      <TableCell>{lead.email}</TableCell>
+                      <TableCell>{lead.product}</TableCell>
+                      <TableCell>{lead.city}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={lead.status || 'open'} 
+                        <Chip
+                          label={lead.status || 'open'}
                           color={getStatusColor(lead.status || 'open')}
                           size="small"
                         />
@@ -160,7 +189,9 @@ export const LeadsAssignedReport = () => {
                         <FormControl size="small" sx={{ minWidth: 120 }}>
                           <Select
                             value={lead.status || 'open'}
-                            onChange={(e) => handleStatusUpdate(lead, e.target.value as Lead['status'])}
+                            onChange={(e) =>
+                              handleStatusUpdate(lead, e.target.value as Lead['status'])
+                            }
                           >
                             <MenuItem value="open">Open</MenuItem>
                             <MenuItem value="in_process">In Process</MenuItem>

@@ -3,6 +3,7 @@ import { ArrowLeft, Filter, Printer, Upload, Search } from 'lucide-react';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { useNavigate } from 'react-router-dom';
 
 interface PartnerApplication {
   id: number;
@@ -18,6 +19,8 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [partners, setPartners] = useState<PartnerApplication[]>([]);
   const [loading, setLoading] = useState(true);
+const navigate = useNavigate();
+
 
   // Filter states
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
@@ -235,10 +238,14 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-1 py-4 whitespace-nowrap">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      <button
+                        onClick={() => navigate(`/partner/${item.id}`)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
                         See Details
                       </button>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

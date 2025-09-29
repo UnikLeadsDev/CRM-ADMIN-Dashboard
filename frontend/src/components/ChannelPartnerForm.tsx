@@ -8,6 +8,7 @@ interface FormFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
 }
+import { useParams } from 'react-router-dom';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -105,7 +106,7 @@ const ViewButton: React.FC = () => (
 
 export default function ChannelPartnerForm() {
   // In a real app, you might get this from the URL. We'll hardcode it for this example.
-  const PARTNER_ID = 5;
+ const { partnerId } = useParams();
 
   // State for all form fields, initialized to an empty object.
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -121,7 +122,7 @@ export default function ChannelPartnerForm() {
     const fetchPartnerData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:3001/api/partners/${PARTNER_ID}`);
+        const response = await fetch(`http://localhost:3001/api/partners/${partnerId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -257,7 +258,7 @@ export default function ChannelPartnerForm() {
     };
 
     fetchPartnerData();
-  }, [PARTNER_ID]);
+  }, [partnerId]);
 
   const handleStatusChange = async (sectionKey: string, status: string) => {
     const currentStatus = sectionStatuses[sectionKey];
@@ -272,7 +273,7 @@ export default function ChannelPartnerForm() {
         ? 'Rejected by admin'
         : 'Approved by admin';
 
-      const response = await fetch(`http://localhost:3001/api/partners/${PARTNER_ID}/section-status`, {
+      const response = await fetch(`http://localhost:3001/api/partners/${partnerId}/section-status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -303,7 +304,7 @@ export default function ChannelPartnerForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3001/api/partners/${PARTNER_ID}/decision`, {
+      const response = await fetch(`http://localhost:3001/api/partners/${partnerId}/decision`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

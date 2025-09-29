@@ -1,68 +1,51 @@
-import { supabase } from '../config/supabase';
 import type { Lead, LeadAssignment } from '../types';
 
 export const leadAssignmentService = {
-  // Assign leads to employee by lead data
-  async assignLeadsByData(leads: Lead[], employeeId: string): Promise<void> {
-    for (const lead of leads) {
-      const { error } = await supabase
-        .from('unikleadsapi')
-        .update({ 
-          'Assigned to Lead Employee ID': employeeId,
-          assigned_at: new Date().toISOString(),
-          status: 'open'
-        })
-        .eq('Customer Name', lead['Customer Name'])
-        .eq('Mobile Number', lead['Mobile Number']);
-      
-      if (error) throw error;
-    }
-  },
-
-  // Auto-assign leads using round-robin by lead data
-  async autoAssignLeadsByData(leads: Lead[], employeeIds: string[]): Promise<void> {
-    for (let i = 0; i < leads.length; i++) {
-      const employeeId = employeeIds[i % employeeIds.length];
-      const lead = leads[i];
-      const { error } = await supabase
-        .from('unikleadsapi')
-        .update({
-          'Assigned to Lead Employee ID': employeeId,
-          assigned_at: new Date().toISOString(),
-          status: 'open'
-        })
-        .eq('Customer Name', lead['Customer Name'])
-        .eq('Mobile Number', lead['Mobile Number']);
-      
-      if (error) throw error;
-    }
-  },
-
-  // Update lead status by lead data
+  // Update lead status (calls your backend API)
   async updateLeadStatus(lead: Lead, status: Lead['status']): Promise<void> {
-    const { error } = await supabase
-      .from('unikleadsapi')
-      .update({ status })
-      .eq('Customer Name', lead['Customer Name'])
-      .eq('Mobile Number', lead['Mobile Number']);
-    
-    if (error) throw error;
+    const res = await fetch(`http://localhost:3001/api/leads/${lead.id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to update lead status');
+    }
   },
 
-  // Get leads assigned to employees
-  async getLeadAssignments(): Promise<LeadAssignment[]> {
-    const { apiClient } = await import('./apiClient');
-    return await apiClient.getAssignedLeads();
-  },
+  // Get all leads grouped by assigned_to
+  // Get all leads grouped by assigned_to
+async getLeadAssignments(): Promise<LeadAssignment[]> {
+  const res = await fetch('http://localhost:3001/api/getassignleads', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
 
-  // Get unassigned leads
-  async getUnassignedLeads(): Promise<Lead[]> {
-    const { data, error } = await supabase
-      .from('unikleadsapi')
-      .select('*')
-      .or('Assigned to Lead Employee ID.is.null,Assigned to Lead Employee ID.eq.');
-    
-    if (error) throw error;
-    return data || [];
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || 'Failed to fetch leads');
   }
+
+  const data = await res.json();
+
+  if (!data.success || !data.leads) return [];
+
+  // Group by assigned_to (employee id)
+  const grouped: Record<string, Lead[]> = {};
+  data.leads.forEach((lead: Lead) => {
+    const empId = lead.assigned_to || 'UNASSIGNED';
+    if (!grouped[empId]) grouped[empId] = [];
+    grouped[empId].push(lead);
+  });
+
+  // Convert into LeadAssignment[]
+  return Object.entries(grouped).map(([employee_id, leads]) => ({
+    employee_id,
+    lead_count: leads.length,
+    leads,
+  }));
+}
+
 };
