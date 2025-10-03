@@ -35,18 +35,18 @@ router.post('/upload-csv', upload.single('file'), async (req, res) => {
           try {
             await connection.query(
               `INSERT INTO assignedleads 
-                (date, name, phone, email, product, city, assigned_to, status) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                parseDate(row.Date), // Convert date here
-                row.Name,
-                row.Phone,
-                row.Email,
-                row.Product,
-                row.City,
-                row['Assigned To'],
-                row.Status
-              ]
+                (date, name, phone, email, product, city,location, assigned_to, status) 
+                VALUES (NOW(), ?, ?, ?, ?, ?,?, ?, ?)`,
+                [
+                  row.Name,
+                  row.Phone,
+                  row.Email,
+                  row.Product,
+                  row.City,
+                  row.Locations,
+                  row['Assigned To'],
+                  row.Status
+                ]
             );
           } catch (err) {
             console.error('Failed row:', row, err.message);

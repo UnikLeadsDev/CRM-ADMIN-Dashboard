@@ -1,14 +1,15 @@
 import { Card, CardContent, CardActions, Typography, Button, Chip, Stack } from '@mui/material';
 import { Call as CallIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
 import type { Lead } from '../types';
-import { apiClient } from '../services/apiClient';
+import axios from 'axios';
+
 
 interface LeadCardProps {
   lead: Lead;
   onStatusChange: (lead: Lead, status: Lead['status']) => void;
 }
 
-export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
+export const LeadCard = ({ lead }: LeadCardProps) => {
   const handleCall = () => {
     window.location.href = `tel:${lead.phone}`;
   };
@@ -17,13 +18,12 @@ export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
     window.open(`https://wa.me/${lead.phone}`, '_blank');
   };
 
-  const handleStatusUpdate = async (status: Lead['status']) => {
+   const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
     try {
-      await apiClient.updateLeadStatus(lead, status);
-      onStatusChange(lead, status);
-    } catch (err) {
-      alert('Failed to update status');
-      console.error(err);
+      await axios.put(`http://localhost:3001/api/leads/${lead.id}/status`, { status });
+      
+    } catch (error) {
+      console.error('Error updating status:', error);
     }
   };
 
@@ -38,7 +38,7 @@ export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
   };
 
   return (
-    <Card sx={{ height: 280, display: 'flex', flexDirection: 'column' }}>
+    <Card sx={{ height: 350, display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ flex: 1 }}>
         <Stack spacing={1}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -49,6 +49,13 @@ export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
           <Typography variant="body2">✉️ {lead.email}</Typography>
           <Typography variant="body2">🏷️ {lead.product}</Typography>
           <Typography variant="body2">📍 {lead.city}</Typography>
+         <Typography variant="body2">
+          📌{" "}
+          <a href={lead.location} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2' }}>
+            {lead.location}
+          </a>
+        </Typography>
+
           {lead.assigned_to && <Typography variant="body2">👤 {lead.assigned_to}</Typography>}
           <Typography variant="caption">📅 {new Date(lead.date).toLocaleDateString()}</Typography>
         </Stack>
@@ -66,18 +73,23 @@ export const LeadCard = ({ lead, onStatusChange }: LeadCardProps) => {
       </CardActions>
 
       {/* Status Update */}
-      <Stack sx={{ p: 1 }}>
-        <select
-          value={lead.status}
-          onChange={e => handleStatusUpdate(e.target.value as Lead['status'])}
-          style={{ width: '100%', padding: '4px' }}
-        >
-          <option value="open">Open</option>
-          <option value="in_process">In Process</option>
-          <option value="closed">Closed</option>
-          <option value="not_interested">Not Interested</option>
-        </select>
-      </Stack>
+    {/* Status Update */}
+          <Stack sx={{ p: 1 }}>
+            <select
+              value={lead.status}
+              onChange={e => handleStatusUpdate(lead, e.target.value as Lead['status'])}
+              style={{ width: '100%', padding: '4px' }}
+            >
+              <option value="new_added">New Added</option>
+              <option value="contacted">Contacted</option>
+              <option value="interested">Interested</option>
+              <option value="in_follow_up">In Follow-Up</option>
+              <option value="converted">Converted</option>
+              <option value="not_interested">Not Interested</option>
+              <option value="invalid">Invalid</option>
+            </select>
+          </Stack>
+
     </Card>
   );
 };

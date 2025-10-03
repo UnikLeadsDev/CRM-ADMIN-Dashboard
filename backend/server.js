@@ -184,6 +184,32 @@ app.get('/api/getid', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to retrieve lead id' });
     }
 })
+// ✅ PUT /api/leads/:id/status - update lead status
+app.put('/api/mainleads/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ success: false, message: 'Status is required' });
+    }
+
+    const [result] = await pool.query(
+      `UPDATE leads SET lead_Status = ? WHERE lead_id = ?`,
+      [status, req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Lead not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Lead status updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating lead status:', error);
+    res.status(500).json({ success: false, message: 'Failed to update lead status' });
+  }
+});
 
 // ✅ GET /api/getleads - fetch all leads
 app.get('/api/getleads', async (req, res) => {
@@ -254,6 +280,7 @@ app.put('/api/leads/:id/status', async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
+
 
 // --- TEST DB ENDPOINT ---
 app.get('/test-db', async (req, res) => {

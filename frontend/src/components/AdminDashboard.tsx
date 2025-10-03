@@ -35,7 +35,7 @@ function TabPanel(props: TabPanelProps) {
 
 export const AdminDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
-  const { leads, loading, error } = useLeads();
+ 
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);

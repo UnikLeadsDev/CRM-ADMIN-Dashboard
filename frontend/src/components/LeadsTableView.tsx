@@ -56,7 +56,7 @@ export const LeadsTableView = () => {
 
   const handleReassign = async (leadId: number, newEmployee: string) => {
     try {
-      await axios.put(`http://localhost:3001/api/leads/reassign/${leadId}`, {
+      await axios.put(`http://localhost:3001/api/reassign/${leadId}`, {
         assigned_to: newEmployee,
       });
       setLeads((prev) =>

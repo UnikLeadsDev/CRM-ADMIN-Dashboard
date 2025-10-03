@@ -73,11 +73,14 @@ export const LeadsOnly = () => {
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Status</InputLabel>
           <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} label="Status">
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="open">Open</MenuItem>
-            <MenuItem value="in_process">In Process</MenuItem>
-            <MenuItem value="closed">Closed</MenuItem>
-            <MenuItem value="not_interested">Not Interested</MenuItem>
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="new_added">New Added</MenuItem>
+              <MenuItem value="contacted">Contacted</MenuItem>
+              <MenuItem value="interested">Interested</MenuItem>
+              <MenuItem value="in_follow_up">In Follow-Up</MenuItem>
+              <MenuItem value="converted">Converted</MenuItem>
+              <MenuItem value="not_interested">Not Interested</MenuItem>
+              <MenuItem value="invalid">Invalid</MenuItem>
           </Select>
         </FormControl>
         <FormControl sx={{ minWidth: 150 }}>

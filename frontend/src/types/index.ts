@@ -7,7 +7,8 @@ export interface Lead {
   product: string;
   city: string;
   assigned_to: string;
-  status: 'open' | 'in_process' | 'closed' | 'not_interested';
+  location: string;
+  status: 'new_added' | 'contacted' | 'interested' | 'in_follow_up' | 'converted' | 'invalid' | 'not_interested';
 }
 
 export interface LeadAssignment {
