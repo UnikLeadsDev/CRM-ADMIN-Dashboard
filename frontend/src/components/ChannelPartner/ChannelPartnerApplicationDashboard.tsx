@@ -31,7 +31,7 @@ const navigate = useNavigate();
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/getpartners'); // adjust base URL if needed
+        const res = await fetch('http://44.193.214.12:3001/api/getpartners'); // adjust base URL if needed
         const data = await res.json();
 
         if (data.success && data.partners) {

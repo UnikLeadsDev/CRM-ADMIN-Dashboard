@@ -195,7 +195,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         : formData.sourceOfIncome;
 
     // ✅ First API: Create lead
-    const response = await fetch('http://localhost:3001/api/leads', {
+    const response = await fetch('http://44.193.214.12:3001/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -218,7 +218,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 
     // ✅ Second API: Fetch latest lead_id from DB
-    const idResponse = await fetch('http://localhost:3001/api/getid'); 
+    const idResponse = await fetch('http://44.193.214.12:3001/api/getid'); 
         const idResult = await idResponse.json();
 
         if (idResult.success) {

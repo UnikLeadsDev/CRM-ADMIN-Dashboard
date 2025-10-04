@@ -39,7 +39,7 @@ export const LeadsAssignedReport = () => {
       setLoading(true);
 
       // 👇 Call your backend API
-      const res = await axios.get("http://localhost:3001/api/getassignleads");
+      const res = await axios.get("http://44.193.214.12:3001/api/getassignleads");
       console.log('API response:', res.data);
 
       if (res.data.success && res.data.leads) {
@@ -72,7 +72,7 @@ export const LeadsAssignedReport = () => {
 
   const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
     try {
-      await axios.put(`http://localhost:3001/api/leads/${lead.id}/status`, { status });
+      await axios.put(`http://44.193.214.12:3001/api/leads/${lead.id}/status`, { status });
       loadAssignments();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -205,10 +205,14 @@ export const LeadsAssignedReport = () => {
                               handleStatusUpdate(lead, e.target.value as Lead['status'])
                             }
                           >
-                            <MenuItem value="open">Open</MenuItem>
-                            <MenuItem value="in_process">In Process</MenuItem>
-                            <MenuItem value="closed">Closed</MenuItem>
+                           <MenuItem value="new_added">New Added</MenuItem>
+                            <MenuItem value="contacted">Contacted</MenuItem>
+                            <MenuItem value="interested">Interested</MenuItem>
+                            <MenuItem value="in_follow_up">In Follow-Up</MenuItem>
+                            <MenuItem value="converted">Converted</MenuItem>
                             <MenuItem value="not_interested">Not Interested</MenuItem>
+                            <MenuItem value="invalid">Invalid</MenuItem>
+
                           </Select>
                         </FormControl>
                       </TableCell>

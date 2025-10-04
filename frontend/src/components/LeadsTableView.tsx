@@ -40,7 +40,7 @@ export const LeadsTableView = () => {
     const fetchLeads = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:3001/api/getassignleads");
+        const res = await axios.get("http://44.193.214.12:3001/api/getassignleads");
         if (res.data.success) {
           setLeads(res.data.leads);
         }
@@ -56,7 +56,7 @@ export const LeadsTableView = () => {
 
   const handleReassign = async (leadId: number, newEmployee: string) => {
     try {
-      await axios.put(`http://localhost:3001/api/reassign/${leadId}`, {
+      await axios.put(`http://44.193.214.12:3001/api/reassign/${leadId}`, {
         assigned_to: newEmployee,
       });
       setLeads((prev) =>

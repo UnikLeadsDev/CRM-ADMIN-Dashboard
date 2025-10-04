@@ -9,14 +9,18 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/employee/:employeeId" element={<EmployeeDashboard />} />
-        <Route path="/leads" element={<LeadsOnly />} />
-        <Route path="/lead" element={<LeadsOnly />} />
-        <Route path="/leadform" element={<LeadForm />} />
-        <Route path="/partner/:partnerId" element={<ChannelPartnerForm />} />
-        <Route path="/" element={<Navigate to="/admin" replace />} />
+        {/* Parent route */}
+        <Route path="/admin" element={<AdminDashboard />}/>
+          {/* Nested routes */}
+          <Route path="employee/:employeeId" element={<EmployeeDashboard />} />
+          <Route path="leads" element={<LeadsOnly />} />
+          <Route path="lead" element={<LeadsOnly />} />
+          <Route path="leadform" element={<LeadForm />} />
+          <Route path="partner/:partnerId" element={<ChannelPartnerForm />} />
+        
 
+        {/* Redirect root to /admin */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>
   )

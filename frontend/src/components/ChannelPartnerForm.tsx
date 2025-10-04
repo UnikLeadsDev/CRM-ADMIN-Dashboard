@@ -122,7 +122,7 @@ export default function ChannelPartnerForm() {
     const fetchPartnerData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`http://localhost:3001/api/partners/${partnerId}`);
+        const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -273,7 +273,7 @@ export default function ChannelPartnerForm() {
         ? 'Rejected by admin'
         : 'Approved by admin';
 
-      const response = await fetch(`http://localhost:3001/api/partners/${partnerId}/section-status`, {
+      const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}/section-status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -304,7 +304,7 @@ export default function ChannelPartnerForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3001/api/partners/${partnerId}/decision`, {
+      const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}/decision`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

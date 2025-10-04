@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Stack, Typography, Box, Tabs, Tab, Paper } from '@mui/material';
+import { Stack, Typography, Box, Tabs, Tab, Paper, Menu, MenuItem } from '@mui/material';
 import { CSVUpload } from './CSVUpload';
 import { LeadsAssignedReport } from './LeadsAssignedReport';
 import { LeadsTableView } from './LeadsTableView';
-import { LeadsOnly } from './LeadsOnly';   // ⬅️ Import your new component
-import { useLeads } from '../hooks/useLeads';
-import LeadForm from './LeadForm'; // ⬅️ Import the LeadForm component
+import { LeadsOnly } from './LeadsOnly';
+import LeadForm from './LeadForm';
 import ChannelPartnerForm from './ChannelPartnerForm';
 import ChannelPartnerApplicationDashboard from './ChannelPartner/ChannelPartnerApplicationDashboard';
 import PersonalDetails from './ChannelPartner/PersonalDetails';
@@ -35,15 +34,25 @@ function TabPanel(props: TabPanelProps) {
 
 export const AdminDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
- 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
+  const handleDropdownClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = (index: number) => {
+    setTabValue(index);
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
     <Box sx={{ display: "flex", width: "100vw", minHeight: "100vh", bgcolor: "#f4f6f8" }}>
-
       {/* Sidebar */}
       <Paper
         elevation={3}
@@ -72,6 +81,7 @@ export const AdminDashboard = () => {
         >
           Admin Panel
         </Typography>
+
         <Tabs
           orientation="vertical"
           value={tabValue}
@@ -103,12 +113,82 @@ export const AdminDashboard = () => {
         >
           <Tab label="📋 All Leads" />
           <Tab label="📊 Assignment Report" />
-          <Tab label="🧾 Leads Only" /> {/* ⬅️ New Tab */}
-          <Tab label="➕ Add Lead" /> {/* ⬅️ New Tab */}
-          <Tab label="💼 Channel Partner" />
-          <Tab label="💼 Channel Partner Application Dashboard" />
-          <Tab label="💼 Channel Partner Personal Details" />
-          <Tab label="💼 Channel Partner Business Details" />
+          <Tab label="🧾 Leads Only" />
+          <Tab label="➕ Add Lead" />
+
+          {/* Channel Partner Dropdown */}
+          <Tab
+            label="💼 Channel Partner ▾"
+            onClick={handleDropdownClick}
+            sx={{ cursor: "pointer" }}
+          />
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+            PaperProps={{
+              sx: {
+                bgcolor: "#1e293b", // match sidebar background
+                color: "#cbd5e1",
+                borderRadius: 2,
+                mt: 1,
+                minWidth: 200,
+              },
+            }}
+          >
+            <MenuItem
+              onClick={() => handleDropdownClose(5)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "#334155",
+                  color: "#fff",
+                },
+              }}
+            >
+              Application Dashboard
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleDropdownClose(4)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "#334155",
+                  color: "#fff",
+                },
+              }}
+            >
+              Channel Partner Form
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleDropdownClose(6)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "#334155",
+                  color: "#fff",
+                },
+              }}
+            >
+              Personal Details
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleDropdownClose(7)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "#334155",
+                  color: "#fff",
+                },
+              }}
+            >
+              Business Details
+            </MenuItem>
+          </Menu>
         </Tabs>
       </Paper>
 
@@ -134,7 +214,7 @@ export const AdminDashboard = () => {
             UniKLeads CRM - Admin Dashboard
           </Typography>
 
-          {/* Tab 1 */}
+          {/* TabPanels */}
           <TabPanel value={tabValue} index={0}>
             <Stack spacing={3}>
               <CSVUpload />
@@ -142,40 +222,28 @@ export const AdminDashboard = () => {
             </Stack>
           </TabPanel>
 
-          {/* Tab 2 */}
           <TabPanel value={tabValue} index={1}>
-            <Box sx={{ width: "100%" }}>
-              <LeadsAssignedReport />
-            </Box>
+            <LeadsAssignedReport />
           </TabPanel>
 
-          {/* Tab 3 */}
           <TabPanel value={tabValue} index={2}>
-            <LeadsOnly />  {/* ⬅️ Your component */}
+            <LeadsOnly />
           </TabPanel>
 
-
-          {/* Tab 4 */}
           <TabPanel value={tabValue} index={3}>
             <LeadForm />
           </TabPanel>
 
-          {/* Tab 5 - Channel Partner */}
+          {/* Channel Partner TabPanels */}
           <TabPanel value={tabValue} index={4}>
             <ChannelPartnerForm />
           </TabPanel>
-
-          {/* Tab 6 */}
           <TabPanel value={tabValue} index={5}>
             <ChannelPartnerApplicationDashboard />
           </TabPanel>
-
-          {/* Tab 7 */}
           <TabPanel value={tabValue} index={6}>
             <PersonalDetails />
           </TabPanel>
-
-          {/* Tab 8 */}
           <TabPanel value={tabValue} index={7}>
             <BusinessDashboard />
           </TabPanel>

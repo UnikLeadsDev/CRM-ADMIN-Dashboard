@@ -1,6 +1,6 @@
 import type { Lead, LeadAssignment } from '../types';
 
-const BASE_URL = 'http://localhost:3001/api'; // change to your backend URL
+const BASE_URL = 'http://44.193.214.12:3001/api'; // change to your backend URL
 
 export const apiClient = {
   // 1. Get all assigned leads

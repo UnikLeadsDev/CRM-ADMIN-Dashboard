@@ -39,7 +39,7 @@ export const useLeads = (employeeId?: string) => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch('http://localhost:3001/api/assignedleads/upload-csv', {
+        const response = await fetch('http://44.193.214.12:3001/api/assignedleads/upload-csv', {
             method: 'POST',
             body: formData,
         });

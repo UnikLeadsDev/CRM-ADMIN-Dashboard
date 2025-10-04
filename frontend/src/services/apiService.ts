@@ -1,6 +1,6 @@
 import type { Lead, LeadAssignment } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://44.193.214.12:3001/api';
 
 export const apiService = {
   // Upload leads via API

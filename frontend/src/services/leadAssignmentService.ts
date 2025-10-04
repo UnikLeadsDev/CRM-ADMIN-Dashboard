@@ -3,7 +3,7 @@ import type { Lead, LeadAssignment } from '../types';
 export const leadAssignmentService = {
   // Update lead status (calls your backend API)
   async updateLeadStatus(lead: Lead, status: Lead['status']): Promise<void> {
-    const res = await fetch(`http://localhost:3001/api/leads/${lead.id}/status`, {
+    const res = await fetch(`http://44.193.214.12:3001/api/leads/${lead.id}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -18,7 +18,7 @@ export const leadAssignmentService = {
   // Get all leads grouped by assigned_to
   // Get all leads grouped by assigned_to
 async getLeadAssignments(): Promise<LeadAssignment[]> {
-  const res = await fetch('http://localhost:3001/api/getassignleads', {
+  const res = await fetch('http://44.193.214.12:3001/api/getassignleads', {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
