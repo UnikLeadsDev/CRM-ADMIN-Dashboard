@@ -24,6 +24,7 @@ interface GeneratedLeads {
   lead_status: string;
   referral_code: string;
   created_at: string;
+  updated_at:string;
 }
 
 export const GeneratedLeads = () => {
@@ -41,13 +42,14 @@ export const GeneratedLeads = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const leadStatusOptions = ['New', 'in follow-up', 'Interested', 'Approved', 'Rejected'];
 
   // 🔹 Fetch leads
   useEffect(() => {
     const fetchLeads = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:3001/api/getgeneratedleads");
+        const res = await axios.get("http://44.193.214.12:3001/api/getgeneratedleads");
         if (res.data.success) {
           setLeads(res.data.leads);
         } else {
@@ -180,39 +182,105 @@ export const GeneratedLeads = () => {
                   <TableCell>Loan Amount</TableCell>
                   {!isMobile && <TableCell>Lead Type</TableCell>}
                   <TableCell>Lead Status</TableCell>
+                  {!isMobile && <TableCell>Last Status Update</TableCell>}
                   {!isMobile && <TableCell>Source</TableCell>}
+                   {!isMobile && <TableCell>Employee ID</TableCell>}
                   {!isMobile && <TableCell>Created At</TableCell>}
                 </TableRow>
               </TableHead>
+                      <TableBody>
+                        {paginatedLeads.map((lead) => (
+                          <TableRow key={lead.lead_id} hover>
+                            <TableCell>{lead.lead_id}</TableCell>
+                            <TableCell>{lead.full_name}</TableCell>
+                            {!isMobile && <TableCell>{lead.mobile_number}</TableCell>}
+                            {!isMobile && <TableCell>{lead.email}</TableCell>}
+                            <TableCell>{lead.product}</TableCell>
+                            <TableCell>₹{Number(lead.loan_amount).toLocaleString()}</TableCell>
+                            {!isMobile && <TableCell>{lead.lead_type}</TableCell>}
 
-              <TableBody>
-                {paginatedLeads.map((lead) => (
-                  <TableRow key={lead.lead_id} hover>
-                    <TableCell>{lead.lead_id}</TableCell>
-                    <TableCell>{lead.full_name}</TableCell>
-                    {!isMobile && <TableCell>{lead.mobile_number}</TableCell>}
-                    {!isMobile && <TableCell>{lead.email}</TableCell>}
-                    <TableCell>{lead.product}</TableCell>
-                    <TableCell>₹{Number(lead.loan_amount).toLocaleString()}</TableCell>
-                    {!isMobile && <TableCell>{lead.lead_type}</TableCell>}
-                    <TableCell>
-                      <Chip
-                        label={lead.lead_status}
-                        color={
-                          lead.lead_status.toLowerCase().includes('follow') ? 'warning' :
-                          lead.lead_status.toLowerCase().includes('interested') ? 'success' :
-                          'default'
-                        }
-                        size="small"
-                      />
-                    </TableCell>
-                    {!isMobile && <TableCell>{lead.source_of_income}</TableCell>}
-                    {!isMobile && (
-                      <TableCell>{new Date(lead.created_at).toLocaleDateString()}</TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
+                            {/* 🔹 Editable Status Column */}
+                         
+                                  <TableCell>
+                                    <FormControl size="small" fullWidth>
+                                      <Select
+                                        value={lead.lead_status}
+                                        onChange={async (e) => {
+                                          const newStatus = e.target.value;
+                                          try {
+                                            // Call PUT API to update status
+                                            const res = await axios.put(
+                                              `http://localhost:3001/api/updateleadstatus/${lead.lead_id}`,
+                                              { status: newStatus }
+                                            );
+
+                                            if (res.data.success && res.data.updatedLead) {
+                                              const updatedLead = res.data.updatedLead;
+
+                                              // Update the local state to reflect the new status AND updated_at
+                                              setLeads((prev) =>
+                                                prev.map((l) =>
+                                                  l.lead_id === updatedLead.lead_id
+                                                    ? { ...l, lead_status: updatedLead.lead_status, updated_at: updatedLead.updated_at }
+                                                    : l
+                                                )
+                                              );
+                                            } else {
+                                              alert("Failed to update status");
+                                            }
+                                          } catch (err) {
+                                            console.error(err);
+                                            alert("Error updating status");
+                                          }
+                                        }}
+                                      >
+                                        {leadStatusOptions.map((status) => (
+                                          <MenuItem key={status} value={status}>
+                                            {status}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                  </TableCell>
+
+                                  {/* 🔹 New column for Last Status Update */}
+                                  {!isMobile && (
+                                    <TableCell>
+                                      {lead.updated_at
+                                        ? new Date(lead.updated_at).toLocaleString('en-IN', {
+                                            timeZone: 'Asia/Kolkata',
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: false,
+                                          })
+                                        : '-'}
+                                    </TableCell>
+                                   )}
+
+
+                            {!isMobile && <TableCell>{lead.source_of_income}</TableCell>}
+                            {!isMobile && <TableCell>{lead.referral_code || 'N/A'}</TableCell>}
+                            {!isMobile && (
+                                <TableCell>
+                                  {new Date(lead.created_at).toLocaleString('en-IN', {
+                                    timeZone: 'Asia/Kolkata',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false, // 24-hour format
+                                  })}
+                                </TableCell>
+                              )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
             </Table>
           </TableContainer>
 
