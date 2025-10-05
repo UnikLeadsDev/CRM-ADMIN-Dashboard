@@ -1,4 +1,4 @@
-import { Card, CardContent, CardActions, Typography, Button, Chip, Stack } from '@mui/material';
+import { Card, CardContent, CardActions, Typography, Button, Chip, Stack, Link} from '@mui/material';
 import { Call as CallIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
 import type { Lead } from '../types';
 import axios from 'axios';
@@ -50,11 +50,17 @@ export const LeadCard = ({ lead }: LeadCardProps) => {
           <Typography variant="body2">🏷️ {lead.product}</Typography>
           <Typography variant="body2">📍 {lead.city}</Typography>
          <Typography variant="body2">
-          📌{" "}
-          <a href={lead.location} target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2' }}>
-            {lead.location}
-          </a>
-        </Typography>
+            📌{" "}
+            <Link 
+              href={lead.location} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              underline="hover" 
+              sx={{ color: '#1976d2', cursor: 'pointer' }}
+            >
+              Live Location
+            </Link>
+          </Typography>
 
           {lead.assigned_to && <Typography variant="body2">👤 {lead.assigned_to}</Typography>}
           <Typography variant="caption">📅 {new Date(lead.date).toLocaleDateString()}</Typography>

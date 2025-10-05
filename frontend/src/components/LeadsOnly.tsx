@@ -1,5 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, CircularProgress, TextField, Select, MenuItem, FormControl, InputLabel, Stack, Pagination } from '@mui/material';
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
+  Pagination,
+  Paper
+} from '@mui/material';
 import { apiClient } from '../services/apiClient';
 import type { Lead } from '../types';
 import { LeadCard } from './LeadCard';
@@ -20,7 +32,6 @@ export const LeadsOnly = () => {
       try {
         setLoading(true);
         const data = await apiClient.getLeads();
-        console.log('Fetched leads:', data);
         setLeads(data);
       } catch (err: any) {
         setError(err.message || 'Failed to load leads');
@@ -60,19 +71,64 @@ export const LeadsOnly = () => {
     setLeads(prev => prev.map(l => (l.id === lead.id ? { ...l, status } : l)));
   };
 
-  if (loading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>;
-  if (error) return <Box p={4}><Typography color="error">{error}</Typography></Box>;
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress />
+      </Box>
+    );
+
+  if (error)
+    return (
+      <Box p={4} textAlign="center">
+        <Typography color="error" variant="h6">
+          {error}
+        </Typography>
+      </Box>
+    );
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>All Leads ({leads.length})</Typography>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontSize: { xs: '1.5rem', sm: '2rem' }, textAlign: { xs: 'center', md: 'left' } }}
+      >
+        Assigened Leads Employee ({leads.length})
+      </Typography>
 
       {/* Filters */}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
-        <TextField placeholder="Search by name, phone, or email" value={search} onChange={e => setSearch(e.target.value)} sx={{ minWidth: 300 }} />
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} label="Status">
+      <Paper
+        elevation={1}
+        sx={{
+          p: 2,
+          mb: 3,
+          borderRadius: 2,
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+          alignItems: { xs: 'stretch', md: 'center' },
+          justifyContent: 'space-between',
+          flexWrap: 'wrap'
+        }}
+      >
+        <TextField
+          placeholder="Search by name, phone, or email"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          fullWidth
+          sx={{ flex: 1, minWidth: { xs: '100%', sm: 300 } }}
+        />
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ flex: 1, justifyContent: 'flex-end' }}>
+          <FormControl fullWidth sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value as any)}
+              label="Status"
+              fullWidth
+            >
               <MenuItem value="all">All Status</MenuItem>
               <MenuItem value="new_added">New Added</MenuItem>
               <MenuItem value="contacted">Contacted</MenuItem>
@@ -81,27 +137,55 @@ export const LeadsOnly = () => {
               <MenuItem value="converted">Converted</MenuItem>
               <MenuItem value="not_interested">Not Interested</MenuItem>
               <MenuItem value="invalid">Invalid</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Employee</InputLabel>
-          <Select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} label="Employee">
-            <MenuItem value="all">All Employees</MenuItem>
-            {uniqueEmployees.map(emp => <MenuItem key={emp} value={emp}>{emp}</MenuItem>)}
-          </Select>
-        </FormControl>
-      </Stack>
+            </Select>
+          </FormControl>
 
-      {/* Lead Cards */}
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+          <FormControl fullWidth sx={{ minWidth: { xs: '100%', sm: 150 } }}>
+            <InputLabel>Employee</InputLabel>
+            <Select
+              value={employeeFilter}
+              onChange={e => setEmployeeFilter(e.target.value)}
+              label="Employee"
+              fullWidth
+            >
+              <MenuItem value="all">All Employees</MenuItem>
+              {uniqueEmployees.map(emp => (
+                <MenuItem key={emp} value={emp}>
+                  {emp}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+      </Paper>
+
+      {/* Lead Cards Grid */}
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            md: 'repeat(3, 1fr)',
+            lg: 'repeat(4, 1fr)'
+          }
+        }}
+      >
         {paginatedLeads.map(lead => (
           <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
         ))}
       </Box>
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={3}>
-        <Pagination count={Math.ceil(filteredLeads.length / leadsPerPage)} page={page} onChange={(_, newPage) => setPage(newPage)} color="primary" />
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={Math.ceil(filteredLeads.length / leadsPerPage)}
+          page={page}
+          onChange={(_, newPage) => setPage(newPage)}
+          color="primary"
+          sx={{ '& .MuiPaginationItem-root': { fontSize: { xs: '0.8rem', sm: '1rem' } } }}
+        />
       </Box>
     </Box>
   );

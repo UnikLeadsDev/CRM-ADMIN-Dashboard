@@ -3,6 +3,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { EmployeeDashboard } from './components/EmployeeDashboard';
 import { LeadsOnly } from './components/LeadsOnly';
 import LeadForm  from './components/LeadForm';
+import {GeneratedLeads} from './components/GeneratedLeads'
 import ChannelPartnerForm from './components/ChannelPartnerForm';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="leads" element={<LeadsOnly />} />
           <Route path="lead" element={<LeadsOnly />} />
           <Route path="leadform" element={<LeadForm />} />
+          <Route path="generatedleads" element={<GeneratedLeads />} />
           <Route path="partner/:partnerId" element={<ChannelPartnerForm />} />
         
 

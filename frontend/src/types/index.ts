@@ -25,3 +25,22 @@ export interface Employee {
     created_at: string;
     updated_at: string;
 }
+
+
+export interface GeneratedLead {
+  lead_id: string;
+  full_name: string;
+  mobile_number: string;
+  email: string;
+  product: string;
+  loan_amount: string;
+  pancard_number: string;
+  aadhar_number: string;
+  area_pincode: string;
+  monthly_income: string;
+  source_of_income: string;
+  lead_type: 'Hot' | 'Warm' | 'Cold';
+  lead_status: 'new_added' | 'in_follow_up' | 'interested' | 'not_interested' | 'converted' | 'invalid';
+  referral_code: string;
+  created_at: string; // ISO date string (e.g., "2025-09-25T07:10:06.000Z")
+}

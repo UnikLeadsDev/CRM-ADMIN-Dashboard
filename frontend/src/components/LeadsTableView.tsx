@@ -2,9 +2,9 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   Stack, Typography, CircularProgress, TextField, Select, MenuItem,
   FormControl, InputLabel, Chip, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, TablePagination, Box, IconButton
+  TableContainer, TableHead, TableRow, Paper, TablePagination, Box, IconButton, useMediaQuery
 } from '@mui/material';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 
 interface Lead {
@@ -32,9 +32,10 @@ export const LeadsTableView = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [productFilter, setProductFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
-
-
   const [editingLeadId, setEditingLeadId] = useState<number | null>(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // 👈 detect mobile
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -50,7 +51,6 @@ export const LeadsTableView = () => {
         setLoading(false);
       }
     };
-
     fetchLeads();
   }, []);
 
@@ -77,13 +77,12 @@ export const LeadsTableView = () => {
         lead.phone.includes(search) ||
         lead.email.toLowerCase().includes(search.toLowerCase());
 
-      let matchesStatus = false;
-      if (statusFilter === 'all') matchesStatus = true;
-      else if (statusFilter === 'open') matchesStatus = !lead.status || lead.status === 'open';
-      else matchesStatus = lead.status === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' ? true :
+          statusFilter === 'open' ? !lead.status || lead.status === 'open' :
+            lead.status === statusFilter;
 
       const matchesEmployee = employeeFilter === 'all' || lead.assigned_to === employeeFilter;
-
       const matchesDate = !dateFilter || lead.date === dateFilter;
       const matchesProduct = productFilter === 'all' || lead.product === productFilter;
       const matchesCity = cityFilter === 'all' || lead.city === cityFilter;
@@ -100,7 +99,7 @@ export const LeadsTableView = () => {
   const uniqueEmployees = useMemo(() => {
     const employees = new Set(leads.map(lead => lead.assigned_to).filter(Boolean));
     return Array.from(employees);
-  }, [leads, search, statusFilter, employeeFilter, dateFilter, productFilter, cityFilter]);
+  }, [leads]);
 
   const getStatusColor = (status: Lead['status']) => {
     switch (status) {
@@ -112,42 +111,44 @@ export const LeadsTableView = () => {
     }
   };
 
-  if (loading) {
+  if (loading)
     return (
       <Stack alignItems="center" py={4}>
         <CircularProgress />
         <Typography>Loading leads...</Typography>
       </Stack>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <Stack alignItems="center" py={4}>
         <Typography color="error">Error: {error}</Typography>
       </Stack>
     );
-  }
 
-  if (leads.length === 0) {
+  if (leads.length === 0)
     return (
       <Stack alignItems="center" py={4}>
         <Typography>No leads found.</Typography>
       </Stack>
     );
-  }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%' }}>
+    <Box sx={{ width: '100%', px: { xs: 1, sm: 2, md: 3 } }}>
       <Stack spacing={2}>
-        {/* Filters */}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: '100%' }}>
+        {/* 🔹 Filters */}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.5}
+          flexWrap="wrap"
+          sx={{ width: '100%', justifyContent: 'space-between' }}
+        >
           <TextField
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             size="small"
-            sx={{ flex: 1 }}
+            sx={{ flex: 1, minWidth: { xs: '100%', sm: '180px' } }}
           />
           <TextField
             type="date"
@@ -156,16 +157,11 @@ export const LeadsTableView = () => {
             onChange={(e) => setDateFilter(e.target.value)}
             sx={{ minWidth: 120 }}
           />
-
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Product</InputLabel>
-            <Select
-              value={productFilter}
-              onChange={(e) => setProductFilter(e.target.value)}
-              label="Product"
-            >
+            <Select value={productFilter} onChange={(e) => setProductFilter(e.target.value)} label="Product">
               <MenuItem value="all">All</MenuItem>
-              {Array.from(new Set(leads.map(lead => lead.product))).map((prod) => (
+              {Array.from(new Set(leads.map(lead => lead.product))).map(prod => (
                 <MenuItem key={prod} value={prod}>{prod}</MenuItem>
               ))}
             </Select>
@@ -173,19 +169,15 @@ export const LeadsTableView = () => {
 
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>City</InputLabel>
-            <Select
-              value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              label="City"
-            >
+            <Select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} label="City">
               <MenuItem value="all">All</MenuItem>
-              {Array.from(new Set(leads.map(lead => lead.city))).map((city) => (
+              {Array.from(new Set(leads.map(lead => lead.city))).map(city => (
                 <MenuItem key={city} value={city}>{city}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 100 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} label="Status">
               <MenuItem value="all">All</MenuItem>
@@ -195,7 +187,8 @@ export const LeadsTableView = () => {
               <MenuItem value="not_interested">Not Interested</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 100 }}>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Employee</InputLabel>
             <Select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} label="Employee">
               <MenuItem value="all">All</MenuItem>
@@ -206,38 +199,39 @@ export const LeadsTableView = () => {
           </FormControl>
         </Stack>
 
-        {/* Leads Table */}
-        <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-          <TableContainer sx={{ maxHeight: 600, width: '100%' }}>
-            <Table stickyHeader>
+        {/* 🔹 Responsive Table */}
+        <Paper sx={{ width: '100%', overflowX: 'auto' }}>
+          <TableContainer sx={{ maxHeight: isMobile ? 400 : 600 }}>
+            <Table stickyHeader size={isMobile ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
                   <TableCell>Date</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Email</TableCell>
+                  {!isMobile && <TableCell>Phone</TableCell>}
+                  {!isMobile && <TableCell>Email</TableCell>}
                   <TableCell>Product</TableCell>
-                  <TableCell>City</TableCell>
+                  {!isMobile && <TableCell>City</TableCell>}
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Status</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {paginatedLeads.map((lead) => (
                   <TableRow key={lead.id} hover>
                     <TableCell>{new Date(lead.date).toLocaleDateString()}</TableCell>
                     <TableCell>{lead.name}</TableCell>
-                    <TableCell>{lead.phone}</TableCell>
-                    <TableCell>{lead.email}</TableCell>
+                    {!isMobile && <TableCell>{lead.phone}</TableCell>}
+                    {!isMobile && <TableCell>{lead.email}</TableCell>}
                     <TableCell>{lead.product}</TableCell>
-                    <TableCell>{lead.city}</TableCell>
+                    {!isMobile && <TableCell>{lead.city}</TableCell>}
                     <TableCell>
                       {editingLeadId === lead.id ? (
                         <FormControl size="small" sx={{ minWidth: 120 }}>
                           <Select
                             value={lead.assigned_to || ''}
                             onChange={(e) => handleReassign(lead.id, e.target.value)}
-                            onBlur={() => setEditingLeadId(null)} // closes after selection
+                            onBlur={() => setEditingLeadId(null)}
                           >
                             {uniqueEmployees.map((emp) => (
                               <MenuItem key={emp} value={emp}>{emp}</MenuItem>
@@ -245,17 +239,14 @@ export const LeadsTableView = () => {
                           </Select>
                         </FormControl>
                       ) : (
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Chip
-                            label={lead.assigned_to || "Unassigned"}
-                            color={lead.assigned_to ? "primary" : "default"}
-                            size="small"
-                            onClick={() => setEditingLeadId(lead.id)} // 👈 enable editing
-                            sx={{ cursor: "pointer" }}
-                          />
-                        </Stack>
+                        <Chip
+                          label={lead.assigned_to || "Unassigned"}
+                          color={lead.assigned_to ? "primary" : "default"}
+                          size="small"
+                          onClick={() => setEditingLeadId(lead.id)}
+                          sx={{ cursor: "pointer" }}
+                        />
                       )}
-
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -269,6 +260,7 @@ export const LeadsTableView = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
           <TablePagination
             component="div"
             count={filteredLeads.length}
@@ -279,7 +271,7 @@ export const LeadsTableView = () => {
               setRowsPerPage(parseInt(e.target.value, 10));
               setPage(0);
             }}
-            rowsPerPageOptions={[25, 50, 100]}
+            rowsPerPageOptions={[10, 25, 50]}
           />
         </Paper>
       </Stack>

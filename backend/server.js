@@ -7,7 +7,7 @@ import { dirname } from 'path';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-
+import GeneratedRoute from './routes/generatedleadsAPI/generateleadsRountes.js';
 import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
 import getAssignedLeadRoute from './routes/AssignleadsAPI/getassignedleadRoutes.js';
 import reassignRoutes from './routes/AssignleadsAPI/reassigendRoutes.js';
@@ -38,6 +38,7 @@ app.use(express.json());
 app.use('/api/assignedleads', AssignedRoute);
 app.use('/api', getAssignedLeadRoute);
 app.use('/api', reassignRoutes);
+app.use('/api', GeneratedRoute);
 // Ensure uploads folder exists
 const uploadPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadPath)) {
