@@ -77,7 +77,7 @@ export const AdminDashboard = () => {
     <Paper
       elevation={0}
       sx={{
-        width: { xs: "75vw", sm: 240 },
+        width: { xs: "75vw", sm: 300 },
         height: "100%",
         bgcolor: "#1e293b",
         color: "white",
@@ -85,7 +85,7 @@ export const AdminDashboard = () => {
         flexDirection: "column",
         alignItems: "center",
         py: 2,
-        px: 1,
+        // px: 1,
       }}
     >
       <Typography
@@ -135,14 +135,17 @@ export const AdminDashboard = () => {
         <Tab icon={<PersonIcon />} label="Assigned Lead Employee" />
         <Tab icon={<AddCircleOutlineIcon />} label="Add Lead" />
         <Tab icon={<BusinessCenterIcon />} label="Generated Leads" />
-       <Tab
-          icon={<BusinessCenterIcon />}
-          label="Channel Partner ▾"
-          onClick={(e) => {
-            //e.preventDefault(); // stop tab from being selected
-            handleDropdownClick(e); // open your dropdown
-          }}
-        />
+      <Tab
+            icon={<BusinessCenterIcon />}
+            label="Channel Partner ▾"
+            onClick={(e) => {
+              e.stopPropagation(); 
+              e.preventDefault();  
+              handleDropdownClick(e);
+            }}
+            value={false} 
+          />
+
 
       </Tabs>
 
@@ -163,9 +166,9 @@ export const AdminDashboard = () => {
       >
         {[
           { text: "Application Dashboard", index: 5 },
-          { text: "Channel Partner Form", index: 4 },
-          { text: "Personal Details", index: 6 },
-          { text: "Business Details", index: 7 },
+           { text: "Channel Partner Form", index: 6 },
+          { text: "Personal Details", index: 7 },
+          { text: "Business Details", index: 8 },
         ].map((item) => (
           <MenuItem
             key={item.text}
@@ -190,7 +193,7 @@ export const AdminDashboard = () => {
     <Box sx={{ display: "flex", width: "100vw", minHeight: "100vh", bgcolor: "#f4f6f8" }}>
       {/* Sidebar for Desktop */}
       {!isMobile && (
-        <Box sx={{ width: 240, flexShrink: 0, position: "sticky", top: 0, height: "100vh" }}>
+        <Box sx={{ width: 300, flexShrink: 0, position: "sticky", top: 0, height: "100vh" }}>
           {sidebarContent}
         </Box>
       )}
@@ -261,36 +264,17 @@ export const AdminDashboard = () => {
           </Typography> */}
 
           {/* Tab Panels */}
-          <TabPanel value={tabValue} index={0}>
-            <Stack spacing={3}>
-              <CSVUpload />
-              <LeadsTableView />
-            </Stack>
-          </TabPanel>
-          <TabPanel value={tabValue} index={1}>
-            <LeadsAssignedReport />
-          </TabPanel>
-          <TabPanel value={tabValue} index={2}>
-            <LeadsOnly />
-          </TabPanel>
-          <TabPanel value={tabValue} index={3}>
-            <LeadForm />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4}>
-            <GeneratedLeads/>
-          </TabPanel>
-          <TabPanel value={tabValue} index={5}>
-            <ChannelPartnerForm />
-          </TabPanel>
-          <TabPanel value={tabValue} index={6}>
-            <ChannelPartnerApplicationDashboard />
-          </TabPanel>
-          <TabPanel value={tabValue} index={7}>
-            <PersonalDetails />
-          </TabPanel>
-          <TabPanel value={tabValue} index={8}>
-            <BusinessDashboard />
-          </TabPanel>
+         <TabPanel value={tabValue} index={0}><CSVUpload /><LeadsTableView /></TabPanel>
+          <TabPanel value={tabValue} index={1}><LeadsAssignedReport /></TabPanel>
+          <TabPanel value={tabValue} index={2}><LeadsOnly /></TabPanel>
+          <TabPanel value={tabValue} index={3}><LeadForm /></TabPanel>
+          <TabPanel value={tabValue} index={4}><GeneratedLeads /></TabPanel>
+          <TabPanel value={tabValue} index={5}><ChannelPartnerApplicationDashboard /></TabPanel>
+          <TabPanel value={tabValue} index={6}><ChannelPartnerForm /></TabPanel>
+         
+          <TabPanel value={tabValue} index={7}><PersonalDetails /></TabPanel>
+          <TabPanel value={tabValue} index={8}><BusinessDashboard /></TabPanel>
+
         </Paper>
       </Box>
     </Box>

@@ -80,17 +80,19 @@ export const CSVUpload = () => {
 
   return (
     <Box
-      sx={{
-        p: { xs: 2, sm: 3 },
-        border: 1,
-        borderRadius: 2,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        width: { xs: '100%', sm: '50%' }, // ✅ full on mobile, half on desktop
-        mx: { xs: 0, sm: 'auto' }, // ✅ centered horizontally on desktop
-        boxShadow: { xs: 0, sm: 2 }, // ✅ subtle shadow on desktop
-      }}
-    >
+  sx={{
+    p: { xs: 2, sm: 3 },
+    border: 1,
+    borderRadius: 2,
+    borderColor: 'divider',
+    bgcolor: 'background.paper',
+    width: { xs: '100%', sm: '40%' }, // narrower but not centered
+    mx: 0, 
+    my: { xs: 2, sm: 0 }, // vertical margin for spacing on small screens
+    ml: { sm: 0 }, // ✅ stay aligned to left
+    boxShadow: { xs: 0, sm: 2 },
+  }}
+>
       <Stack spacing={2}>
         <Typography
           variant="subtitle1"

@@ -170,7 +170,14 @@ export const GeneratedLeads = () => {
 
         {/* 🔹 Leads Table */}
         <Paper sx={{ width: '100%', overflowX: 'auto' }}>
-          <TableContainer sx={{ maxHeight: isMobile ? 400 : 600 }}>
+          <TableContainer 
+          
+          
+          
+          sx={{ 
+            overflowY: 'auto',               // vertical scroll only for table
+            overflowX: 'auto', 
+            maxHeight: isMobile ? 400 : 600 }}>
             <Table stickyHeader size={isMobile ? 'small' : 'medium'}>
               <TableHead>
                 <TableRow>
@@ -183,7 +190,7 @@ export const GeneratedLeads = () => {
                   {!isMobile && <TableCell>Lead Type</TableCell>}
                   <TableCell>Lead Status</TableCell>
                   {!isMobile && <TableCell>Last Status Update</TableCell>}
-                  {!isMobile && <TableCell>Source</TableCell>}
+                  {!isMobile && <TableCell>Source of Income</TableCell>}
                    {!isMobile && <TableCell>Employee ID</TableCell>}
                   {!isMobile && <TableCell>Created At</TableCell>}
                 </TableRow>
@@ -210,7 +217,7 @@ export const GeneratedLeads = () => {
                                           try {
                                             // Call PUT API to update status
                                             const res = await axios.put(
-                                              `http://localhost:3001/api/updateleadstatus/${lead.lead_id}`,
+                                              `http://44.193.214.12:3001/api/updateleadstatus/${lead.lead_id}`,
                                               { status: newStatus }
                                             );
 
@@ -295,7 +302,7 @@ export const GeneratedLeads = () => {
               setRowsPerPage(parseInt(e.target.value, 10));
               setPage(0);
             }}
-            rowsPerPageOptions={[10, 25, 50]}
+            rowsPerPageOptions={[10, 25, 50, 100]}
           />
         </Paper>
       </Stack>

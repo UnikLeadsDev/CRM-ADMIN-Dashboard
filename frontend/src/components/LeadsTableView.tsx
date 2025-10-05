@@ -134,7 +134,7 @@ export const LeadsTableView = () => {
     );
 
   return (
-    <Box sx={{ width: '100%', px: { xs: 1, sm: 2, md: 3 } }}>
+    <Box sx={{ width: '100%', px: { xs: 1, sm: 2, md: 3 },marginTop: 4 }}>
       <Stack spacing={2}>
         {/* 🔹 Filters */}
         <Stack
