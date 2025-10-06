@@ -319,6 +319,7 @@ export const AdminDashboard = () => {
 
           <TabPanel value={tabValue} index={6}>
             <ChannelPartnerForm />
+            <Outlet />
           </TabPanel>
 
           <TabPanel value={tabValue} index={7}>
@@ -328,7 +329,7 @@ export const AdminDashboard = () => {
           <TabPanel value={tabValue} index={8}>
             <BusinessDashboard />
           </TabPanel>
-            <Outlet />
+            
         </Paper>
       </Box>
     </Box>
