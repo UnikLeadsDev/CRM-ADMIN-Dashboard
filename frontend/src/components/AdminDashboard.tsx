@@ -12,18 +12,18 @@ import {
   Drawer,
   useMediaQuery,
 } from "@mui/material";
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import PersonIcon from '@mui/icons-material/Person';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import PersonIcon from "@mui/icons-material/Person";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import MenuIcon from "@mui/icons-material/Menu";
 import { CSVUpload } from "./CSVUpload";
 import { LeadsAssignedReport } from "./LeadsAssignedReport";
 import { LeadsTableView } from "./LeadsTableView";
 import { LeadsOnly } from "./LeadsOnly";
 import LeadForm from "./LeadForm";
-import {GeneratedLeads} from "./GeneratedLeads";
+import { GeneratedLeads } from "./GeneratedLeads";
 import ChannelPartnerForm from "./ChannelPartnerForm";
 import ChannelPartnerApplicationDashboard from "./ChannelPartner/ChannelPartnerApplicationDashboard";
 import PersonalDetails from "./ChannelPartner/PersonalDetails";
@@ -44,35 +44,39 @@ function TabPanel({ children, value, index }: TabPanelProps) {
       aria-labelledby={`admin-tab-${index}`}
       style={{ width: "100%" }}
     >
-      {value === index && <Box sx={{ p: { xs: 1, sm: 3 }, width: "100%" }}>{children}</Box>}
+      {value === index && (
+        <Box sx={{ p: { xs: 1, sm: 3 }, width: "100%" }}>{children}</Box>
+      )}
     </div>
   );
 }
 
 export const AdminDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [dropdownAnchor, setDropdownAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 900px)");
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-    if (isMobile) setMobileOpen(false); // Auto-close drawer on mobile after selecting
-  };
-
-  const handleDropdownClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleDropdownClick = (
+    event: React.MouseEvent<HTMLDivElement>,
+    menuType: string
+  ) => {
+    setDropdownAnchor(event.currentTarget);
+    setActiveDropdown(menuType);
   };
 
   const handleDropdownClose = (index: number) => {
     setTabValue(index);
-    setAnchorEl(null);
+    setDropdownAnchor(null);
+    setActiveDropdown(null);
     if (isMobile) setMobileOpen(false);
   };
 
-  const open = Boolean(anchorEl);
+  const open = Boolean(dropdownAnchor);
 
-  // Sidebar content reused for Drawer and Desktop
   const sidebarContent = (
     <Paper
       elevation={0}
@@ -85,7 +89,6 @@ export const AdminDashboard = () => {
         flexDirection: "column",
         alignItems: "center",
         py: 2,
-        // px: 1,
       }}
     >
       <Typography
@@ -97,63 +100,71 @@ export const AdminDashboard = () => {
       </Typography>
 
       <Tabs
-  orientation="vertical"
-  value={tabValue}
-  onChange={handleTabChange}
-  TabIndicatorProps={{ style: { display: "none" } }}
-  sx={{
-    flexGrow: 1,
-    width: "100%",
-    "& .MuiTab-root": {
-      alignItems: "center",        // 👈 aligns icon + label
-      flexDirection: "row",        // 👈 inline layout
-      gap: "10px",                 // 👈 spacing between icon and text
-      px: 3,
-      justifyContent: "flex-start",
-      color: "#cbd5e1",
-      textTransform: "none",
-      fontWeight: 500,
-      fontSize: "1rem",
-      borderRadius: "8px",
-      mb: 1,
-      minHeight: "48px",
-    },
-    "& .MuiTab-root.Mui-selected": {
-      bgcolor: "#334155",
-      color: "#fff",
-      fontWeight: 600,
-    },
-    "& .MuiTab-root:hover": {
-      bgcolor: "#475569",
-      color: "#fff",
-    },
-  }}
->
+        orientation="vertical"
+        value={tabValue}
+        onChange={() => {}}
+        TabIndicatorProps={{ style: { display: "none" } }}
+        sx={{
+          flexGrow: 1,
+          width: "100%",
+          "& .MuiTab-root": {
+            alignItems: "center",
+            flexDirection: "row",
+            gap: "10px",
+            px: 3,
+            justifyContent: "flex-start",
+            color: "#cbd5e1",
+            textTransform: "none",
+            fontWeight: 500,
+            fontSize: "1rem",
+            borderRadius: "8px",
+            mb: 1,
+            minHeight: "48px",
+          },
+          "& .MuiTab-root.Mui-selected": {
+            bgcolor: "#334155",
+            color: "#fff",
+            fontWeight: 600,
+          },
+          "& .MuiTab-root:hover": {
+            bgcolor: "#475569",
+            color: "#fff",
+          },
+        }}
+      >
+        {/* 🔹 1. Assigned Leads Dropdown */}
+        <Tab
+          icon={<AssignmentIcon />}
+          label="Assigned Leads ▾"
+          onClick={(e) => handleDropdownClick(e, "assigned")}
+          value={false}
+        />
 
-        <Tab icon={<AssignmentIcon />} label="Assigned Leads" />
-        <Tab icon={<AssessmentIcon />} label="Assigned Leads Report" />
-        <Tab icon={<PersonIcon />} label="Assigned Lead Employee" />
-        <Tab icon={<AddCircleOutlineIcon />} label="Add Lead" />
-        <Tab icon={<BusinessCenterIcon />} label="Generated Leads" />
-      <Tab
-            icon={<BusinessCenterIcon />}
-            label="Channel Partner ▾"
-            onClick={(e) => {
-              e.stopPropagation(); 
-              e.preventDefault();  
-              handleDropdownClick(e);
-            }}
-            value={false} 
-          />
+        {/* 🔹 2. Generated Leads Dropdown */}
+        <Tab
+          icon={<AddCircleOutlineIcon />}
+          label="Generate Leads ▾"
+          onClick={(e) => handleDropdownClick(e, "generate")}
+          value={false}
+        />
 
-
+        {/* 🔹 3. Channel Partner Dropdown */}
+        <Tab
+          icon={<BusinessCenterIcon />}
+          label="Channel Partner ▾"
+          onClick={(e) => handleDropdownClick(e, "partner")}
+          value={false}
+        />
       </Tabs>
 
-      {/* Dropdown Menu */}
+      {/* 🔽 Dropdown Menus */}
       <Menu
-        anchorEl={anchorEl}
+        anchorEl={dropdownAnchor}
         open={open}
-        onClose={() => setAnchorEl(null)}
+        onClose={() => {
+          setDropdownAnchor(null);
+          setActiveDropdown(null);
+        }}
         PaperProps={{
           sx: {
             bgcolor: "#1e293b",
@@ -164,27 +175,62 @@ export const AdminDashboard = () => {
           },
         }}
       >
-        {[
-          { text: "Application Dashboard", index: 5 },
-           { text: "Channel Partner Form", index: 6 },
-          { text: "Personal Details", index: 7 },
-          { text: "Business Details", index: 8 },
-        ].map((item) => (
-          <MenuItem
-            key={item.text}
-            onClick={() => handleDropdownClose(item.index)}
-            sx={{
-              px: 3,
-              py: 1.5,
-              "&:hover": {
-                bgcolor: "#334155",
-                color: "#fff",
-              },
-            }}
-          >
-            {item.text}
-          </MenuItem>
-        ))}
+        {activeDropdown === "assigned" &&
+          [
+            { text: "Assigned Leads List", index: 0 },
+            { text: "Assigned Leads Report", index: 1 },
+            { text: "Assigned Lead Employee", index: 2 },
+          ].map((item) => (
+            <MenuItem
+              key={item.text}
+              onClick={() => handleDropdownClose(item.index)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": { bgcolor: "#334155", color: "#fff" },
+              }}
+            >
+              {item.text}
+            </MenuItem>
+          ))}
+
+        {activeDropdown === "generate" &&
+          [
+            { text: "Add Lead", index: 3 },
+            { text: "Generated Leads", index: 4 },
+          ].map((item) => (
+            <MenuItem
+              key={item.text}
+              onClick={() => handleDropdownClose(item.index)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": { bgcolor: "#334155", color: "#fff" },
+              }}
+            >
+              {item.text}
+            </MenuItem>
+          ))}
+
+        {activeDropdown === "partner" &&
+          [
+            { text: "Application Dashboard", index: 5 },
+            { text: "Channel Partner Form", index: 6 },
+            { text: "Personal Details", index: 7 },
+            { text: "Business Details", index: 8 },
+          ].map((item) => (
+            <MenuItem
+              key={item.text}
+              onClick={() => handleDropdownClose(item.index)}
+              sx={{
+                px: 3,
+                py: 1.5,
+                "&:hover": { bgcolor: "#334155", color: "#fff" },
+              }}
+            >
+              {item.text}
+            </MenuItem>
+          ))}
       </Menu>
     </Paper>
   );
@@ -231,13 +277,7 @@ export const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 4 },
-          mt: { xs: 6, sm: 0 }, // space for mobile menu icon
-        }}
-      >
+      <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 4 }, mt: { xs: 6, sm: 0 } }}>
         <Paper
           elevation={1}
           sx={{
@@ -249,32 +289,43 @@ export const AdminDashboard = () => {
             bgcolor: "white",
           }}
         >
-          {/* <Typography
-            variant="h5"
-            align="center"
-            gutterBottom
-            sx={{
-              fontWeight: "bold",
-              color: "#1e293b",
-              mb: { xs: 2, sm: 4 },
-              fontSize: { xs: "1.3rem", sm: "1.8rem" },
-            }}
-          >
-            UniKLeads CRM - Admin Dashboard
-          </Typography> */}
-
           {/* Tab Panels */}
-         <TabPanel value={tabValue} index={0}><CSVUpload /><LeadsTableView /></TabPanel>
-          <TabPanel value={tabValue} index={1}><LeadsAssignedReport /></TabPanel>
-          <TabPanel value={tabValue} index={2}><LeadsOnly /></TabPanel>
-          <TabPanel value={tabValue} index={3}><LeadForm /></TabPanel>
-          <TabPanel value={tabValue} index={4}><GeneratedLeads /></TabPanel>
-          <TabPanel value={tabValue} index={5}><ChannelPartnerApplicationDashboard /></TabPanel>
-          <TabPanel value={tabValue} index={6}><ChannelPartnerForm /></TabPanel>
-         
-          <TabPanel value={tabValue} index={7}><PersonalDetails /></TabPanel>
-          <TabPanel value={tabValue} index={8}><BusinessDashboard /></TabPanel>
+          <TabPanel value={tabValue} index={0}>
+            <CSVUpload />
+            <LeadsTableView />
+          </TabPanel>
 
+          <TabPanel value={tabValue} index={1}>
+            <LeadsAssignedReport />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
+            <LeadsOnly />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={3}>
+            <LeadForm />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={4}>
+            <GeneratedLeads />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={5}>
+            <ChannelPartnerApplicationDashboard />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={6}>
+            <ChannelPartnerForm />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={7}>
+            <PersonalDetails />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={8}>
+            <BusinessDashboard />
+          </TabPanel>
         </Paper>
       </Box>
     </Box>

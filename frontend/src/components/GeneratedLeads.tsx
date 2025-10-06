@@ -37,6 +37,8 @@ export const GeneratedLeads = () => {
   const [productFilter, setProductFilter] = useState('all');
   const [leadTypeFilter, setLeadTypeFilter] = useState('all');
   const [leadStatusFilter, setLeadStatusFilter] = useState('all');
+  const [employeeFilter, setEmployeeFilter] = useState('all');
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -65,26 +67,30 @@ export const GeneratedLeads = () => {
   }, []);
 
   // 🔹 Filtering logic
-  const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      const matchesSearch =
-        !search ||
-        lead.full_name.toLowerCase().includes(search.toLowerCase()) ||
-        lead.mobile_number.includes(search) ||
-        lead.email.toLowerCase().includes(search.toLowerCase());
+const filteredLeads = useMemo(() => {
+  return leads.filter((lead) => {
+    const matchesSearch =
+      !search ||
+      lead.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      lead.mobile_number.includes(search) ||
+      lead.email.toLowerCase().includes(search.toLowerCase());
 
-      const matchesProduct =
-        productFilter === 'all' || lead.product === productFilter;
+    const matchesProduct =
+      productFilter === 'all' || lead.product === productFilter;
 
-      const matchesLeadType =
-        leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
+    const matchesLeadType =
+      leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
 
-      const matchesLeadStatus =
-        leadStatusFilter === 'all' || lead.lead_status === leadStatusFilter;
+    const matchesLeadStatus =
+      leadStatusFilter === 'all' || lead.lead_status === leadStatusFilter;
 
-      return matchesSearch && matchesProduct && matchesLeadType && matchesLeadStatus;
-    });
-  }, [leads, search, productFilter, leadTypeFilter, leadStatusFilter]);
+    const matchesEmployee =
+      employeeFilter === 'all' || lead.referral_code === employeeFilter; // Assuming referral_code = employee ID
+
+    return matchesSearch && matchesProduct && matchesLeadType && matchesLeadStatus && matchesEmployee;
+  });
+}, [leads, search, productFilter, leadTypeFilter, leadStatusFilter, employeeFilter]);
+
 
   const paginatedLeads = useMemo(() => {
     const start = page * rowsPerPage;
@@ -136,6 +142,23 @@ export const GeneratedLeads = () => {
             size="small"
             sx={{ flex: 1, minWidth: { xs: '100%', sm: '180px' } }}
           />
+
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Employee ID</InputLabel>
+            <Select
+              value={employeeFilter}
+              onChange={(e) => setEmployeeFilter(e.target.value)}
+              label="Employee ID"
+            >
+              <MenuItem value="all">All</MenuItem>
+              {Array.from(new Set(leads.map(l => l.referral_code))).map(emp => (
+                <MenuItem key={emp} value={emp}>
+                  {emp || 'N/A'}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
 
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Product</InputLabel>
