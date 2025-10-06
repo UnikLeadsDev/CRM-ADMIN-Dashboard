@@ -5,6 +5,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { useNavigate } from 'react-router-dom';
 
+
 interface PartnerApplication {
   id: number;
   applicationDate: string;
@@ -224,12 +225,12 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
                         ${item.status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 
                           item.status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200' : 
                           'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
-                        ● {item.status}
+                        ● {item.status} 
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <button
-                        onClick={() => navigate(`/partner/${item.id}`)}
+                        onClick={() => navigate(`/admin/partner/${item.id}`)}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                       >
                         See Details

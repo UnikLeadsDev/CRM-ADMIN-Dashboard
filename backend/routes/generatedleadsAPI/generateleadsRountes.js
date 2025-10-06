@@ -94,6 +94,36 @@ router.put('/updateleadstatus/:id', async (req, res) => {
   }
 });
 
+// routes/channelPartners.js
+router.put("/approve-partner/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      "SELECT id FROM channel_partners WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    const numericId = rows[0].id;
+    const formattedId = `CP${numericId.toString().padStart(6, "0")}`;
+
+    await pool.execute("UPDATE channel_partners SET id = ? WHERE id = ?", [
+      formattedId,
+      id,
+    ]);
+
+    res.json({ success: true, formattedId });
+  } catch (error) {
+    console.error("Error approving partner:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+
 
 
 export default router;

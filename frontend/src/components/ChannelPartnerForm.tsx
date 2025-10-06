@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 interface FormFieldProps {
   label: string;
   id: string;
@@ -107,6 +108,8 @@ const ViewButton: React.FC = () => (
 export default function ChannelPartnerForm() {
   // In a real app, you might get this from the URL. We'll hardcode it for this example.
  const { partnerId } = useParams();
+   const [result, setResult] = useState("");
+     const [loading, setLoading] = useState(false);
 
   // State for all form fields, initialized to an empty object.
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -298,6 +301,26 @@ export default function ChannelPartnerForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
+
+    const handleApprove = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.put(
+        `http://44.193.214.12:3001/api/approve-partner/${partnerId}`
+      );
+
+      if (response.data.success) {
+        setResult(`Partner Approved: ${response.data.formattedId}`);
+      } else {
+        setResult("Approval failed.");
+      }
+    } catch (error) {
+      console.error("Error approving partner:", error);
+      setResult("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Submits the final decision (section 6)
@@ -826,13 +849,16 @@ export default function ChannelPartnerForm() {
               </SelectField>
               <FormField label="Digital OTP" id="digitalOTP" value={formData.digitalOTP} placeholder="Enter Valid OTP" onChange={handleChange} />
             </div>
-            <div className="mt-6 flex justify-center">
+             <div className="mt-6 flex flex-col items-center gap-2">
               <button
-                type="submit"
-                className="bg-[#4635FE] text-white font-semibold px-8 py-2.5 rounded-md hover:bg-indigo-700"
+                onClick={handleApprove}
+                disabled={loading}
+                className="bg-[#4635FE] text-white font-semibold px-8 py-2.5 rounded-md hover:bg-indigo-700 disabled:opacity-60"
               >
-                Update Decision
+                {loading ? "Processing..." : "Update Decision"}
               </button>
+
+              {result && <p className="text-sm text-gray-700 mt-2">{result}</p>}
             </div>
           </Section>
 

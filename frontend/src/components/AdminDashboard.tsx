@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Outlet } from "react-router-dom";
+
 import {
   Stack,
   Typography,
@@ -326,6 +328,7 @@ export const AdminDashboard = () => {
           <TabPanel value={tabValue} index={8}>
             <BusinessDashboard />
           </TabPanel>
+            <Outlet />
         </Paper>
       </Box>
     </Box>
