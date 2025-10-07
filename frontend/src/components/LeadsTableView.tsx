@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
+import Link from '@mui/material/Link';
 
 interface Lead {
   id: number;
@@ -15,6 +16,7 @@ interface Lead {
   email: string;
   product: string;
   city: string;
+  location: string;
   assigned_to: string;
   status: 'open' | 'in_process' | 'closed' | 'not_interested';
 }
@@ -211,6 +213,7 @@ export const LeadsTableView = () => {
                   {!isMobile && <TableCell>Email</TableCell>}
                   <TableCell>Product</TableCell>
                   {!isMobile && <TableCell>City</TableCell>}
+                  {!isMobile && <TableCell>Location</TableCell>}
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Status</TableCell>
                 </TableRow>
@@ -225,6 +228,17 @@ export const LeadsTableView = () => {
                     {!isMobile && <TableCell>{lead.email}</TableCell>}
                     <TableCell>{lead.product}</TableCell>
                     {!isMobile && <TableCell>{lead.city}</TableCell>}
+                     <TableCell>
+                      <Link
+                        href={lead.location}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        underline="hover"
+                        color="primary"
+                      >
+                        View Map
+                      </Link>
+                    </TableCell>
                     <TableCell>
                       {editingLeadId === lead.id ? (
                         <FormControl size="small" sx={{ minWidth: 120 }}>

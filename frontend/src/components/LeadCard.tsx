@@ -20,6 +20,7 @@ export const LeadCard = ({ lead }: LeadCardProps) => {
 
    const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
     try {
+     
       await axios.put(`http://44.193.214.12:3001/api/leads/${lead.id}/status`, { status });
       
     } catch (error) {
