@@ -230,6 +230,7 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <button
+                        
                         onClick={() => navigate(`/admin/partner/${item.id}`)}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                       >
