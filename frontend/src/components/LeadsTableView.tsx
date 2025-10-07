@@ -209,10 +209,10 @@ export const LeadsTableView = () => {
                 <TableRow>
                   <TableCell>Date</TableCell>
                   <TableCell>Name</TableCell>
-                  {!isMobile && <TableCell>Phone</TableCell>}
+                  {!isMobile && <TableCell>Mobile</TableCell>}
                   {!isMobile && <TableCell>Email</TableCell>}
                   <TableCell>Product</TableCell>
-                  {!isMobile && <TableCell>City</TableCell>}
+                  {!isMobile && <TableCell>Address</TableCell>}
                   {!isMobile && <TableCell>Location</TableCell>}
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Status</TableCell>
