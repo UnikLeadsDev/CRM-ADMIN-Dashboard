@@ -48,6 +48,9 @@ interface SelectFieldProps {
   disabled?: boolean;
   children: React.ReactNode;
 }
+interface ChannelPartnerFormProps {
+  partnerId: string | null;
+}
 
 const SelectField: React.FC<SelectFieldProps> = ({ label, id, value, onChange, disabled, children }) => (
   <div>
@@ -105,11 +108,17 @@ const ViewButton: React.FC = () => (
   </div>
 );
 
-export default function ChannelPartnerForm() {
+export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProps) {
+  // if(!partnerId) {
+  //   return null;
+
+  // }
   // In a real app, you might get this from the URL. We'll hardcode it for this example.
- const { partnerId } = useParams();
+  //  const { partnerId } = useParams<{ partnerId: string }>();
+   const { partnerId: paramId } = useParams<{ partnerId: string }>();
    const [result, setResult] = useState("");
      const [loading, setLoading] = useState(false);
+     
 
   // State for all form fields, initialized to an empty object.
   const [formData, setFormData] = useState<Record<string, any>>({});

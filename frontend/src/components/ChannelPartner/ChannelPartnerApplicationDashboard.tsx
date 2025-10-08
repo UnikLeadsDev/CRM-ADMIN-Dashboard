@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { useNavigate } from 'react-router-dom';
+import ChannelPartnerForm  from '../ChannelPartnerForm';
 
 
 interface PartnerApplication {
@@ -21,6 +22,9 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
   const [partners, setPartners] = useState<PartnerApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [OpenModal, setOpenModal] = useState(false);
+ const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>();
+
 
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filterDate, setFilterDate] = useState('');
@@ -231,7 +235,7 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
                     <td className="px-2 py-2 whitespace-nowrap">
                       <button
                         
-                        onClick={() => navigate(`/admin/partner/${item.id}`)}
+                        onClick={() => { setOpenModal(true); setSelectedPartnerId(item.id); }}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                       >
                         See Details
@@ -243,6 +247,11 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
             </table>
           </div>
         )}
+            {OpenModal && (
+              <ChannelPartnerForm partnerId={selectedPartnerId?.toString()} />
+            )}
+
+        
 
         {!loading && filteredData.length === 0 && (
           <div className="text-center py-12">
@@ -253,5 +262,10 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
 
 export default ChannelPartnerApplicationDashboard;

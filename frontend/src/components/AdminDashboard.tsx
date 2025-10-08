@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState  } from "react";
 import { Outlet  } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Stack,
   Typography,
@@ -54,6 +55,7 @@ function TabPanel({ children, value, index }: TabPanelProps) {
 }
 
 export const AdminDashboard = () => {
+  const {partnerId} = useParams<{partnerId: string}>();
   const [tabValue, setTabValue] = useState(0);
   const [dropdownAnchor, setDropdownAnchor] = useState<null | HTMLElement>(
     null
@@ -61,7 +63,7 @@ export const AdminDashboard = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 900px)");
-
+  const navigate = useNavigate();
   const handleDropdownClick = (
     event: React.MouseEvent<HTMLDivElement>,
     menuType: string
@@ -78,6 +80,8 @@ export const AdminDashboard = () => {
   };
 
   const open = Boolean(dropdownAnchor);
+
+
 
   const sidebarContent = (
     <Paper
@@ -217,9 +221,9 @@ export const AdminDashboard = () => {
         {activeDropdown === "partner" &&
           [
             { text: "Application Dashboard", index: 5 },
-            { text: "Channel Partner Form", index: 6 },
-            { text: "Personal Details", index: 7 },
-            { text: "Business Details", index: 8 },
+            // { text: "Channel Partner Form", index: 6 },
+            { text: "Personal Details", index: 6 },
+            { text: "Business Details", index: 7 },
           ].map((item) => (
             <MenuItem
               key={item.text}
@@ -313,20 +317,20 @@ export const AdminDashboard = () => {
             <GeneratedLeads />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={5} >
             <ChannelPartnerApplicationDashboard />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={6}>
+          {/* <TabPanel value={tabValue} index={6}>
             <ChannelPartnerForm />
             <Outlet />
-          </TabPanel>
+          </TabPanel> */}
 
-          <TabPanel value={tabValue} index={7}>
+          <TabPanel value={tabValue} index={6}>
             <PersonalDetails />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={8}>
+          <TabPanel value={tabValue} index={7}>
             <BusinessDashboard />
           </TabPanel>
        
