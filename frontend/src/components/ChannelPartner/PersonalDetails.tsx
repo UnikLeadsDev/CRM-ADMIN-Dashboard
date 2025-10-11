@@ -24,34 +24,38 @@ const PersonalDetails: React.FC = () => {
   const [filterDate, setFilterDate] = useState('');
   const [employeeId, setEmployeeId] = useState('');
 
-  // Fetch data from backend
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const res = await fetch('http://44.193.214.12:3001/api/getpartners'); // adjust base URL if needed
-        const data = await res.json();
+useEffect(() => {
+  const fetchPartners = async () => {
+    try {
+      const res = await fetch('http://44.193.214.12:3001/api/getpartners');
+      const data = await res.json();
 
-        if (data.success && data.partners) {
-          const mapped: PartnerApplication[] = data.partners.map((p: any) => ({
-            id: p.id,
-            applicationDate: new Date(p.application_date).toLocaleDateString(), // keep only date
+      if (data.success && data.partners) {
+        const mapped: PartnerApplication[] = data.partners
+          .map((p: any) => ({
+            id: p.id, // keep as string (like CP000001)
+            applicationDate: new Date(p.application_date).toLocaleDateString(),
             referenceId: p.application_reference_id,
             applicantName: `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.trim(),
             mobileNo: p.mobile_number,
             referredEmployeeId: p.authorized_person_employee_id,
             status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
-          }));
-          setPartners(mapped);
-        }
-      } catch (err) {
-        console.error('Error fetching partners:', err);
-      } finally {
-        setLoading(false);
+          }))
+          // 🔹 Show only IDs starting with "CP"
+          .filter((p) => typeof p.id === 'string' && p.id.startsWith('CP'));
+          
+        setPartners(mapped);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching partners:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchPartners();
-  }, []);
+  fetchPartners();
+}, []);
+
 
   // PDF Export
   const handlePrintPDF = () => {

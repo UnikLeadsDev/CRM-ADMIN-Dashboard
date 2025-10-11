@@ -11,6 +11,7 @@ import GeneratedRoute from './routes/generatedleadsAPI/generateleadsRountes.js';
 import AssignedRoute from './routes/AssignleadsAPI/assignedleadsRoutes.js';
 import getAssignedLeadRoute from './routes/AssignleadsAPI/getassignedleadRoutes.js';
 import reassignRoutes from './routes/AssignleadsAPI/reassigendRoutes.js';
+import permissionRoutes from './routes/permissionRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,6 +47,7 @@ if (!fs.existsSync(uploadPath)) {
 }
 // Serve uploaded files publicly
 app.use('/uploads', express.static(uploadPath));
+app.use('/api', permissionRoutes);
 
 const pool = mysql.createPool({
   host: 'channelpartner.cwniws4uuerg.us-east-1.rds.amazonaws.com',

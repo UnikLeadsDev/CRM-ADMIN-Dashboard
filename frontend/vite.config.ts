@@ -5,5 +5,5 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
-  base: '/', // ⬅️ add this line for proper subpath handling
+  base: '/admin', // ⬅️ add this line for proper subpath handling
 })
