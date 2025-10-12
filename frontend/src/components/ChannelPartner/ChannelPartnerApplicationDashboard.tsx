@@ -30,14 +30,15 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
   const [filterDate, setFilterDate] = useState('');
   const [employeeId, setEmployeeId] = useState('');
 
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const res = await fetch('http://44.193.214.12:3001/api/getpartners');
-        const data = await res.json();
+ useEffect(() => {
+  const fetchPartners = async () => {
+    try {
+      const res = await fetch('http://44.193.214.12:3001/api/getpartners');
+      const data = await res.json();
 
-        if (data.success && data.partners) {
-          const mapped: PartnerApplication[] = data.partners.map((p: any) => ({
+      if (data.success && data.partners) {
+        const mapped: PartnerApplication[] = data.partners
+          .map((p: any) => ({
             id: p.id,
             applicationDate: new Date(p.application_date).toLocaleDateString(),
             referenceId: p.application_reference_id,
@@ -45,18 +46,22 @@ const ChannelPartnerApplicationDashboard: React.FC = () => {
             mobileNo: p.mobile_number,
             referredEmployeeId: p.authorized_person_employee_id,
             status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
-          }));
-          setPartners(mapped);
-        }
-      } catch (err) {
-        console.error('Error fetching partners:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+          }))
+          // 🔹 Only show IDs starting with "CP" (case-insensitive)
+          .filter((p) => typeof p.id === 'string' && p.id.toUpperCase().startsWith('CP'));
 
-    fetchPartners();
-  }, []);
+        setPartners(mapped);
+      }
+    } catch (err) {
+      console.error('Error fetching partners:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPartners();
+}, []);
+
 
   // PDF Export
   const handlePrintPDF = () => {

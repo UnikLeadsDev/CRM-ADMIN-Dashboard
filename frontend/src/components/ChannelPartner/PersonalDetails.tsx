@@ -18,6 +18,8 @@ const PersonalDetails: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [partners, setPartners] = useState<PartnerApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
 
   // Filter states
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
@@ -33,7 +35,7 @@ useEffect(() => {
       if (data.success && data.partners) {
         const mapped: PartnerApplication[] = data.partners
           .map((p: any) => ({
-            id: p.id, // keep as string (like CP000001)
+            id: p.id, // keep as string or number
             applicationDate: new Date(p.application_date).toLocaleDateString(),
             referenceId: p.application_reference_id,
             applicantName: `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.trim(),
@@ -41,9 +43,9 @@ useEffect(() => {
             referredEmployeeId: p.authorized_person_employee_id,
             status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
           }))
-          // 🔹 Show only IDs starting with "CP"
-          .filter((p) => typeof p.id === 'string' && p.id.startsWith('CP'));
-          
+          // 🔹 Show only numeric IDs
+          .filter((p) => !isNaN(Number(p.id)));
+
         setPartners(mapped);
       }
     } catch (err) {
@@ -55,6 +57,33 @@ useEffect(() => {
 
   fetchPartners();
 }, []);
+
+const handleDeletePartner = async (partnerId: string) => {
+  try {
+    const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}`, {
+      method: 'POST', // matches your backend route
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Remove the deleted partner from local state so the table updates immediately
+      setPartners((prev) => prev.filter((partner) => partner.id !== partnerId));
+
+      console.log(`Partner ${partnerId} deleted successfully`);
+    } else {
+      console.error('Failed to delete partner:', data.message);
+    }
+  } catch (error) {
+    console.error('Error deleting partner:', error);
+  }
+};
+
+
+
 
 
   // PDF Export
@@ -215,7 +244,7 @@ useEffect(() => {
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">APPLICATION DATE</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER NAME</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER MOBILE no.</th>
-                  <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER ID</th>
+                  {/* <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER ID</th> */}
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNERS STATUS</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">ACTION</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">PARTNER BUSINESS DETAILS</th>
@@ -228,7 +257,7 @@ useEffect(() => {
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.applicationDate}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">{item.applicantName}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.mobileNo}</td>
-                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.referredEmployeeId}</td>
+                    {/* <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.referredEmployeeId}</td> */}
                     <td className="px-1 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
                         ${item.status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 
@@ -237,11 +266,30 @@ useEffect(() => {
                         ● {item.status}
                       </span>
                     </td>
-                    <td className="px-1 py-4 whitespace-nowrap">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg text-sm font-medium transition-colors">
-                        Action
-                      </button>
-                    </td>
+                     <td className="px-1 h-4 py-4 whitespace-nowrap relative">
+                        {/* Main Button */}
+                        <button
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg text-sm font-medium transition-colors"
+                          onClick={() => setOpen(!open)}
+                        >
+                          Action
+                        </button>
+
+                        {/* Dropdown */}
+                        {open && (
+                          <ul className="absolute mt-1 bg-white border border-gray-300 rounded shadow-md w-40 z-10">
+                            <li
+                              className="px-4 py-2 hover:bg-red-100 cursor-pointer text-red-600"
+                              onClick={() => {
+                               handleDeletePartner(item.id.toString()); // call your function
+                                setOpen(false); // close dropdown
+                              }}
+                            >
+                              Reject Contract
+                            </li>
+                          </ul>
+                        )}
+                      </td>
                     <td className="px-1 py-4 whitespace-nowrap">
                       <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg text-sm font-medium transition-colors">
                         See Details

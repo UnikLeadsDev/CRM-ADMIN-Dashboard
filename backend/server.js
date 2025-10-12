@@ -495,6 +495,25 @@ app.post('/api/addpartner', async (req, res) => {
     }
 });
 
+app.post('/api/partners/:id', async (req, res) => {
+  const partnerId = req.params.id;
+    try {
+      const result = await pool.query('DeleTE FROM channel_partners WHERE id = ?', [partnerId]);
+      if (result[0].affectedRows === 0) {
+        return res.status(404).json({ message: 'Partner not found' });
+      }
+      res.json({ message: 'Partner deleted successfully' });
+    }
+    catch (error) {
+      console.error('Failed to delete partner:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+        
+
+
+
 //GET /api/partners/:id
  
 app.get('/api/partners/:id', async (req, res) => {
