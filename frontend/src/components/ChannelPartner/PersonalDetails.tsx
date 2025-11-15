@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Filter, Printer, Upload, Search } from 'lucide-react';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import ChannelPartnerForm from '../ChannelPartnerForm';
 import * as XLSX from "xlsx";
 
 interface PartnerApplication {
@@ -11,7 +12,7 @@ interface PartnerApplication {
   applicantName: string;
   mobileNo: string;
   referredEmployeeId: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Pending' | 'Active' | 'Deactive';
 }
 
 const PersonalDetails: React.FC = () => {
@@ -19,6 +20,8 @@ const PersonalDetails: React.FC = () => {
   const [partners, setPartners] = useState<PartnerApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [openForm, setOpenForm] = useState(false);
+const [partnerId, setPartnerId] = useState<string | null>(null);
 
 
   // Filter states
@@ -35,16 +38,22 @@ useEffect(() => {
       if (data.success && data.partners) {
         const mapped: PartnerApplication[] = data.partners
           .map((p: any) => ({
-            id: p.id, // keep as string or number
+            id: p.id,
             applicationDate: new Date(p.application_date).toLocaleDateString(),
             referenceId: p.application_reference_id,
             applicantName: `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.trim(),
             mobileNo: p.mobile_number,
             referredEmployeeId: p.authorized_person_employee_id,
-            status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
+            status: p.final_decision as 'Pending' | 'Active' | 'Deactive',
           }))
-          // 🔹 Show only numeric IDs
-          .filter((p) => !isNaN(Number(p.id)));
+          // 🔹 Filter: only show IDs starting with "CP" and status "Approved"
+          .filter(
+            (p) =>
+              typeof p.id === 'string' &&
+              p.id.toUpperCase().startsWith('CP') &&
+              (p.status === 'Active' || p.status === 'Deactive')
+              
+          );
 
         setPartners(mapped);
       }
@@ -58,10 +67,15 @@ useEffect(() => {
   fetchPartners();
 }, []);
 
+const handleOpenForm = (id: string) => {
+  setPartnerId(id);
+  setOpenForm(true);
+};
+
 const handleDeletePartner = async (partnerId: string) => {
   try {
-    const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}`, {
-      method: 'POST', // matches your backend route
+    const response = await fetch(`http://localhost:3001/api/deactive-partners/${partnerId}`, {
+      method: 'PUT', 
       headers: {
         'Content-Type': 'application/json',
       },
@@ -244,24 +258,26 @@ const handleDeletePartner = async (partnerId: string) => {
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">APPLICATION DATE</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER NAME</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER MOBILE no.</th>
-                  {/* <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER ID</th> */}
+                  <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNER ID</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">CHANNEL PARTNERS STATUS</th>
                   <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">ACTION</th>
-                  <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">PARTNER BUSINESS DETAILS</th>
+                  <th className="px-1 py-4 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider border-r border-gray-200">PARTNER PERSONAL DETAILS</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredData.map((item) => (
+                {filteredData.map((item,index) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.id}</td>
+                     <td className="px-2 py-2 text-sm text-gray-900 border-r border-gray-200">
+                        {index + 1}
+                      </td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.applicationDate}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">{item.applicantName}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.mobileNo}</td>
-                    {/* <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.referredEmployeeId}</td> */}
+                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.id}</td>
                     <td className="px-1 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
-                        ${item.status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 
-                          item.status === 'Rejected' ? 'bg-red-100 text-red-800 border-red-200' : 
+                        ${item.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' : 
+                          item.status === 'Deactive' ? 'bg-red-100 text-red-800 border-red-200' : 
                           'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
                         ● {item.status}
                       </span>
@@ -291,9 +307,30 @@ const handleDeletePartner = async (partnerId: string) => {
                         )}
                       </td>
                     <td className="px-1 py-4 whitespace-nowrap">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg text-sm font-medium transition-colors">
+                      <button
+                      onClick={()=>handleOpenForm(item.id.toString())}
+                       className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg text-sm font-medium transition-colors">
                         See Details
                       </button>
+                      {openForm && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    {/* Scrollable container */}
+    <div className="bg-white rounded-lg shadow-lg max-h-[90vh] w-[90vw] md:w-[70vw] overflow-y-auto p-6 relative">
+      
+      {/* Close Button (top-right corner) */}
+      <button
+        onClick={() => setOpenForm(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-semibold text-lg"
+      >
+        ✕
+      </button>
+
+      {/* Channel Partner Form */}
+      <ChannelPartnerForm partnerId={partnerId!} />
+    </div>
+  </div>
+)}
+
                     </td>
                   </tr>
                 ))}

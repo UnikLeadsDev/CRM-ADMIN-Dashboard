@@ -25,33 +25,42 @@ const BusinessDashboard: React.FC = () => {
   const [employeeId, setEmployeeId] = useState('');
 
   // Fetch data from backend
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const res = await fetch('http://44.193.214.12:3001/api/getpartners'); // adjust base URL if needed
-        const data = await res.json();
+// Fetch data from backend
+useEffect(() => {
+  const fetchPartners = async () => {
+    try {
+      const res = await fetch('http://44.193.214.12:3001/api/getpartners');
+      const data = await res.json();
 
-        if (data.success && data.partners) {
-          const mapped: PartnerApplication[] = data.partners.map((p: any) => ({
-            id: p.id,
-            applicationDate: new Date(p.application_date).toLocaleDateString(), // keep only date
-            referenceId: p.application_reference_id,
-            applicantName: `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.trim(),
-            mobileNo: p.mobile_number,
-            referredEmployeeId: p.authorized_person_employee_id,
-            status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
-          }));
-          setPartners(mapped);
-        }
-      } catch (err) {
-        console.error('Error fetching partners:', err);
-      } finally {
-        setLoading(false);
+      if (data.success && data.partners) {
+        // Filter only Approved or Active partners
+        const filteredPartners = data.partners.filter(
+          (p: any) =>
+            p.final_decision === 'Approved' || p.final_decision === 'Active'
+        );
+
+        const mapped: PartnerApplication[] = filteredPartners.map((p: any) => ({
+          id: p.id,
+          applicationDate: new Date(p.application_date).toLocaleDateString(),
+          referenceId: p.application_reference_id,
+          applicantName: `${p.first_name} ${p.middle_name ?? ''} ${p.last_name}`.trim(),
+          mobileNo: p.mobile_number,
+          referredEmployeeId: p.authorized_person_employee_id,
+          status: p.final_decision as 'Pending' | 'Approved' | 'Rejected',
+        }));
+
+        setPartners(mapped);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching partners:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchPartners();
-  }, []);
+  fetchPartners();
+}, []);
+
 
   // PDF Export
   const handlePrintPDF = () => {
@@ -217,13 +226,15 @@ const BusinessDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredData.map((item) => (
+                {filteredData.map((item ,index) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.id}</td>
+                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                      {index + 1}
+                    </td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.applicationDate}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">{item.applicantName}</td>
                     <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.mobileNo}</td>
-                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.referredEmployeeId}</td>
+                    <td className="px-1 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{item.id}</td>
                     <td className="px-1 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border 
                         ${item.status === 'Approved' ? 'bg-green-100 text-green-800 border-green-200' : 

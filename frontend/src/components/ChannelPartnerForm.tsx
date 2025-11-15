@@ -165,39 +165,27 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
 
           // ✅ Current Address 1
           currentAddress1: data.current_address1,
-          currentPincode1: data.current_pincode1,
-          currentState1: data.current_state1,
-          currentDistrict1: data.current_district1,
-          currentCity1: data.current_city1,
-          currentLocality1: data.current_locality1,
-          currentLandmark1: data.current_landmark1,
-
-          // ✅ Current Address 2
           currentAddress2: data.current_address2,
-          currentPincode2: data.current_pincode2,
-          currentState2: data.current_state2,
-          currentDistrict2: data.current_district2,
-          currentCity2: data.current_city2,
-          currentLocality2: data.current_locality2,
-          currentLandmark2: data.current_landmark2,
+          currentPincode1: data.current_pincode,
+          currentState1: data.current_state,
+          currentDistrict1: data.current_district,
+          currentCity1: data.current_city,
+          currentLocality1: data.current_locality,
+          currentLandmark1: data.current_landmark,
+
+        
 
           // ✅ Permanent Address 1
-          permanentAddress1: data.permanent_address1,
-          permanentPincode1: data.permanent_pincode1,
-          permanentState1: data.permanent_state1,
-          permanentDistrict1: data.permanent_district1,
-          permanentCity1: data.permanent_city1,
-          permanentLocality1: data.permanent_locality1,
-          permanentLandmark1: data.permanent_landmark1,
-
-          // ✅ Permanent Address 2
+          permanentAddress1: data.permanent_address,
           permanentAddress2: data.permanent_address2,
-          permanentPincode2: data.permanent_pincode2,
-          permanentState2: data.permanent_state2,
-          permanentDistrict2: data.permanent_district2,
-          permanentCity2: data.permanent_city2,
-          permanentLocality2: data.permanent_locality2,
-          permanentLandmark2: data.permanent_landmark2,
+          permanentPincode1: data.permanent_pincode,
+          permanentState1: data.permanent_state,
+          permanentDistrict1: data.permanent_district,
+          permanentCity1: data.permanent_city,
+          permanentLocality1: data.permanent_locality,
+          permanentLandmark1: data.permanent_landmark,
+
+         
 
           // ✅ Banking Details
           bankName: data.bank_name,
@@ -246,10 +234,12 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
             mappedData.kycCreditReport = doc.document_number;
           }
         });
+        console.log("Fetched and mapped partner data:", mappedData, kycDocs);
 
 
         // --- Set state ---
         setFormData(mappedData);
+
         setDocuments(kycDocs);
 
         // --- Section Statuses ---
@@ -282,8 +272,8 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
       // --- FIX: Replaced the unreliable prompt() with a default reason ---
       // In a real-world app, you would use a modal component to ask for a reason.
       const reason = newStatus === 'Rejected'
-        ? 'Rejected by admin'
-        : 'Approved by admin';
+        ? 'Deactive by admin'
+        : 'Active by admin';
 
       const response = await fetch(`http://44.193.214.12:3001/api/partners/${partnerId}/section-status`, {
         method: 'PATCH',
@@ -312,25 +302,41 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-    const handleApprove = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.put(
-        `http://44.193.214.12:3001/api/approve-partner/${partnerId}`
+const handleApprove = async () => {
+  try {
+    setLoading(true);
+
+    // Step 1: Update partner status
+    const statusResponse = await axios.put(
+      `http://localhost:3001/api/approve-partner-status/${partnerId}`
+    );
+
+    if (statusResponse.data.success) {
+      console.log("✅ Status updated successfully");
+
+      // Step 2: Update partner ID after status success
+      const idResponse = await axios.put(
+        `http://localhost:3001/api/approve-partner-id/${partnerId}`
       );
 
-      if (response.data.success) {
-        setResult(`Partner Approved: ${response.data.formattedId}`);
+      if (idResponse.data.success) {
+        setResult(
+          `Partner Approved: ${idResponse.data.partner.id} (Status: ${idResponse.data.partner.status})`
+        );
       } else {
-        setResult("Approval failed.");
+        setResult("Failed to update partner ID.");
       }
-    } catch (error) {
-      console.error("Error approving partner:", error);
-      setResult("Something went wrong!");
-    } finally {
-      setLoading(false);
+    } else {
+      setResult("Failed to update partner status.");
     }
-  };
+  } catch (error) {
+    console.error("Error approving partner:", error);
+    setResult("Something went wrong!");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Submits the final decision (section 6)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -367,8 +373,8 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
 
   const Section: React.FC<SectionProps> = ({ title, children, sectionKey, onStatusChange }) => {
     const status = sectionStatuses[sectionKey];
-    const approvedClasses = status === "Approved" ? "bg-green-100 text-green-800 border-green-300" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
-    const rejectedClasses = status === "Rejected" ? "bg-red-100 text-red-800 border-red-300" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
+    const approvedClasses = status === "Active" ? "bg-green-100 text-green-800 border-green-300" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
+    const rejectedClasses = status === "Deactive" ? "bg-red-100 text-red-800 border-red-300" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
 
     return (
       <section>
@@ -378,14 +384,14 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
             <div className="flex items-center space-x-2">
               <button
                 type="button"
-                onClick={() => onStatusChange(sectionKey, "Approved")}
+                onClick={() => onStatusChange(sectionKey, "Active")}
                 className={`px-4 py-1 text-xs font-semibold rounded-full border transition-colors duration-200 ${approvedClasses}`}
               >
                 Approved
               </button>
               <button
                 type="button"
-                onClick={() => onStatusChange(sectionKey, "Rejected")}
+                onClick={() => onStatusChange(sectionKey, "Deactive")}
                 className={`px-4 py-1 text-xs font-semibold rounded-full border transition-colors duration-200 ${rejectedClasses}`}
               >
                 Rejected
@@ -462,7 +468,7 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
             onStatusChange={handleStatusChange}
           >
             {/* ✅ Current Address 1 */}
-            <h4 className="text-sm font-semibold col-span-full">Current Address 1</h4>
+            <h4 className="text-sm font-semibold col-span-full">Current Address </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               <div className="lg:col-span-2">
                 <FormField
@@ -473,6 +479,13 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
                   onChange={handleChange}
                 />
               </div>
+              <FormField
+                  label="Address"
+                  id="currentAddress1"
+                  value={formData.currentAddress2}
+                  disabled
+                  onChange={handleChange}
+                />
               <FormField
                 label="Pin Code"
                 id="currentPincode1"
@@ -519,65 +532,6 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
                 />
               </div>
             </div>
-
-            {/* ✅ Current Address 2 */}
-            <h4 className="text-sm font-semibold col-span-full mt-4">Current Address 2</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              <div className="lg:col-span-2">
-                <FormField
-                  label="Address"
-                  id="currentAddress2"
-                  value={formData.currentAddress2}
-                  disabled
-                  onChange={handleChange}
-                />
-              </div>
-              <FormField
-                label="Pin Code"
-                id="currentPincode2"
-                value={formData.currentPincode2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="State"
-                id="currentState2"
-                value={formData.currentState2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="District"
-                id="currentDistrict2"
-                value={formData.currentDistrict2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="City"
-                id="currentCity2"
-                value={formData.currentCity2}
-                disabled
-                onChange={handleChange}
-              />
-              {/* ✅ New Fields */}
-              <FormField
-                label="Locality/Village"
-                id="currentLocality2"
-                value={formData.currentLocality2}
-                disabled
-                onChange={handleChange}
-              />
-              <div className="lg:col-span-2">
-                <FormField
-                  label="Near Landmark"
-                  id="currentLandmark2"
-                  value={formData.currentLandmark2}
-                  disabled
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
           </Section>
 
 
@@ -587,7 +541,7 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
             onStatusChange={handleStatusChange}
           >
             {/* ✅ Permanent Address 1 */}
-            <h4 className="text-sm font-semibold col-span-full">Permanent Address 1</h4>
+            <h4 className="text-sm font-semibold col-span-full">Permanent Address </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               <div className="lg:col-span-2">
                 <FormField
@@ -598,6 +552,13 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
                   onChange={handleChange}
                 />
               </div>
+              <FormField
+                  label="Address"
+                  id="permanentAddress1"
+                  value={formData.permanentAddress2}
+                  disabled
+                  onChange={handleChange}
+                />
               <FormField
                 label="Pin Code"
                 id="permanentPincode1"
@@ -639,65 +600,6 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
                   label="Near Landmark"
                   id="permanentLandmark1"
                   value={formData.permanentLandmark1}
-                  disabled
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* ✅ Permanent Address 2 */}
-            <h4 className="text-sm font-semibold col-span-full mt-4">Permanent Address 2</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              <div className="lg:col-span-2">
-                <FormField
-                  label="Address"
-                  id="permanentAddress2"
-                  value={formData.permanentAddress2}
-                  disabled
-                  onChange={handleChange}
-                />
-              </div>
-              <FormField
-                label="Pin Code"
-                id="permanentPincode2"
-                value={formData.permanentPincode2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="State"
-                id="permanentState2"
-                value={formData.permanentState2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="District"
-                id="permanentDistrict2"
-                value={formData.permanentDistrict2}
-                disabled
-                onChange={handleChange}
-              />
-              <FormField
-                label="City"
-                id="permanentCity2"
-                value={formData.permanentCity2}
-                disabled
-                onChange={handleChange}
-              />
-              {/* ✅ New Fields */}
-              <FormField
-                label="Locality/Village"
-                id="permanentLocality2"
-                value={formData.permanentLocality2}
-                disabled
-                onChange={handleChange}
-              />
-              <div className="lg:col-span-2">
-                <FormField
-                  label="Near Landmark"
-                  id="permanentLandmark2"
-                  value={formData.permanentLandmark2}
                   disabled
                   onChange={handleChange}
                 />
@@ -848,8 +750,8 @@ export default function ChannelPartnerForm({ partnerId }: ChannelPartnerFormProp
               </SelectField>
               <SelectField label="Final Decision" id="finalDecision" value={formData.finalDecision} onChange={handleChange}>
                 <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+                <option value="Active">Active</option>
+                <option value="Deactive">Deactive</option>
               </SelectField>
               <SelectField label="Authorized Person Signature" id="authSignature" value={formData.authSignature} onChange={handleChange}>
                 <option value="">Select Signature Type</option>

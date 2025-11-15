@@ -11,6 +11,7 @@ import BusinessDashboard from "./components/ChannelPartner/BusinessDashboard";
 import { CSVUpload } from "./components/CSVUpload";
 import { LeadsTableView } from "./components/LeadsTableView";
 import { LeadsAssignedReport } from "./components/LeadsAssignedReport";
+import { FieldVisit } from "./components/FieldVisit";
 
 
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="add-lead" element={<LeadForm />} />
         <Route path="generated-leads" element={<GeneratedLeads />} />
         <Route path="partner-dashboard" element={<ChannelPartnerApplicationDashboard />} />
+        <Route path="field-visit" element={<FieldVisit />} />
         
         <Route path="partner-form/:partnerId" element={<ChannelPartnerForm />} />
         <Route path="personal-details" element={<PersonalDetails />} />

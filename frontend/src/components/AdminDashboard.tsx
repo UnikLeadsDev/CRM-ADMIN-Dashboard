@@ -31,6 +31,7 @@ import ChannelPartnerForm from "./ChannelPartnerForm";
 import ChannelPartnerApplicationDashboard from "./ChannelPartner/ChannelPartnerApplicationDashboard";
 import PersonalDetails from "./ChannelPartner/PersonalDetails";
 import BusinessDashboard from "./ChannelPartner/BusinessDashboard";
+import { FieldVisit } from "./FieldVisit";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -143,7 +144,7 @@ export const AdminDashboard = () => {
           icon={<AssignmentIcon />}
           label="Assigned Leads ▾"
           onClick={(e) => handleDropdownClick(e, "assigned")}
-          value={false}
+          value={0}
         />
 
         {/* 🔹 2. Generated Leads Dropdown */}
@@ -151,7 +152,7 @@ export const AdminDashboard = () => {
           icon={<AddCircleOutlineIcon />}
           label="Generate Leads ▾"
           onClick={(e) => handleDropdownClick(e, "generate")}
-          value={false}
+          value={3}
         />
 
         {/* 🔹 3. Channel Partner Dropdown */}
@@ -159,7 +160,7 @@ export const AdminDashboard = () => {
           icon={<BusinessCenterIcon />}
           label="Channel Partner ▾"
           onClick={(e) => handleDropdownClick(e, "partner")}
-          value={false}
+          value={6}
         />
       </Tabs>
 
@@ -204,6 +205,7 @@ export const AdminDashboard = () => {
           [
             { text: "Add Lead", index: 3 },
             { text: "Generated Leads", index: 4 },
+            { text: "Field Visit", index: 5 },
           ].map((item) => (
             <MenuItem
               key={item.text}
@@ -220,10 +222,10 @@ export const AdminDashboard = () => {
 
         {activeDropdown === "partner" &&
           [
-            { text: "Application Dashboard", index: 5 },
+            { text: "Application Dashboard", index: 6 },
             // { text: "Channel Partner Form", index: 6 },
-            { text: "Personal Details", index: 6 },
-            { text: "Business Details", index: 7 },
+            { text: "Personal Details", index: 7 },
+            { text: "Business Details", index: 8 },
           ].map((item) => (
             <MenuItem
               key={item.text}
@@ -316,8 +318,11 @@ export const AdminDashboard = () => {
           <TabPanel value={tabValue} index={4}>
             <GeneratedLeads />
           </TabPanel>
+          <TabPanel value={tabValue} index={5}>
+            <FieldVisit/>
+          </TabPanel>
 
-          <TabPanel value={tabValue} index={5} >
+          <TabPanel value={tabValue} index={6} >
             <ChannelPartnerApplicationDashboard />
           </TabPanel>
 
@@ -326,11 +331,11 @@ export const AdminDashboard = () => {
             <Outlet />
           </TabPanel> */}
 
-          <TabPanel value={tabValue} index={6}>
+          <TabPanel value={tabValue} index={7}>
             <PersonalDetails />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={7}>
+          <TabPanel value={tabValue} index={8}>
             <BusinessDashboard />
           </TabPanel>
        

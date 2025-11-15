@@ -495,10 +495,10 @@ app.post('/api/addpartner', async (req, res) => {
     }
 });
 
-app.post('/api/partners/:id', async (req, res) => {
+app.put('/api/deactive-partners/:id', async (req, res) => {
   const partnerId = req.params.id;
     try {
-      const result = await pool.query('DeleTE FROM channel_partners WHERE id = ?', [partnerId]);
+      const result = await pool.query('Update channel_partners set final_decision="Deactive" where id=?', [partnerId]);
       if (result[0].affectedRows === 0) {
         return res.status(404).json({ message: 'Partner not found' });
       }
@@ -509,6 +509,95 @@ app.post('/api/partners/:id', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+// ✅ Update partner status route
+app.put("/api/approve-partner-status/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      "SELECT id FROM channel_partners WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    // Update status to Active
+    await pool.execute(
+      "UPDATE channel_partners SET final_decision = 'Active' WHERE id = ?",
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: "Partner status updated to Active",
+    });
+  } catch (error) {
+    console.error("Error updating partner status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+
+// ✅ Update partner ID route
+app.put("/api/approve-partner-id/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      "SELECT id FROM channel_partners WHERE id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    // Format ID like CP000001
+    const numericId = rows[0].id;
+    const formattedId = `CP${numericId.toString().padStart(6, "0")}`;
+
+    // Update the partner's ID
+    await pool.execute(
+      "UPDATE channel_partners SET id = ? WHERE id = ?",
+      [formattedId, id]
+    );
+
+    const [updatedRows] = await pool.execute(
+      "SELECT id, final_decision FROM channel_partners WHERE id = ?",
+      [formattedId]
+    );
+
+    const updatedPartner = updatedRows[0];
+
+    res.json({
+      success: true,
+      message: "Partner ID formatted successfully",
+      partner: {
+        id: updatedPartner.id,
+        status: updatedPartner.final_decision,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating partner ID:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+});
+
 
         
 
@@ -524,8 +613,10 @@ app.get('/api/partners/:id', async (req, res) => {
             return res.status(404).json({ message: 'Partner not found' });
         }
         const partner = partnerRows[0];
+        console.log('Fetched partner:', partner);
         const [documentRows] = await pool.query('SELECT * FROM partner_documents WHERE partner_id = ?', [partnerId]);
         const responseData = { ...partner, documents: documentRows };
+        console.log('Response data:', responseData);
         res.json(responseData);
     } catch (error) {
         console.error('Failed to fetch partner:', error);

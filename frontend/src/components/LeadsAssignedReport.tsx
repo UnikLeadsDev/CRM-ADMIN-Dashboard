@@ -16,7 +16,15 @@ export interface Lead {
   product: string;
   city: string;
   assigned_to: string;
-  status: 'new_added' | 'contacted' | 'interested' | 'in_follow_up' | 'converted' | 'not_interested' | 'invalid';
+  status:
+    | 'new_added'
+    | 'contacted'
+    | 'interested'
+    | 'in_follow_up'
+    | 'converted'
+    | 'not_interested'
+    | 'invalid'
+    | 'delete';
 }
 
 interface EmployeeLeads {
@@ -75,11 +83,23 @@ export const LeadsAssignedReport = () => {
   };
 
   const handleStatusUpdate = async (lead: Lead, status: Lead['status']) => {
-    try {
-      await axios.put(`http://44.193.214.12:3001/api/leads/${lead.id}/status`, { status });
-      loadAssignments();
-    } catch (error) {
-      console.error('Error updating status:', error);
+    if (status === 'delete') {
+      const confirmDelete = window.confirm(`Are you sure you want to delete lead "${lead.name}"?`);
+      if (!confirmDelete) return;
+
+      try {
+        await axios.delete(`http://44.193.214.12:3001/api/assignedleads/leads/${lead.id}`);
+        await loadAssignments();
+      } catch (error) {
+        console.error('Error deleting lead:', error);
+      }
+    } else {
+      try {
+        await axios.put(`http://44.193.214.12:3001/api/leads/${lead.id}/status`, { status });
+        loadAssignments();
+      } catch (error) {
+        console.error('Error updating status:', error);
+      }
     }
   };
 
@@ -258,6 +278,7 @@ export const LeadsAssignedReport = () => {
                               <MenuItem value="converted">Converted</MenuItem>
                               <MenuItem value="not_interested">Not Interested</MenuItem>
                               <MenuItem value="invalid">Invalid</MenuItem>
+                              <MenuItem value="delete">🗑 Delete Lead</MenuItem>
                             </Select>
                           </FormControl>
                         </TableCell>

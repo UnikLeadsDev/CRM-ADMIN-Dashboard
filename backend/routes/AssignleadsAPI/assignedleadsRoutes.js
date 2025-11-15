@@ -69,4 +69,23 @@ router.post('/upload-csv', upload.single('file'), async (req, res) => {
   }
 });
 
+
+// DELETE Lead by ID
+router.delete("/leads/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query("DELETE FROM assigned_leads WHERE id = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Lead not found" });
+    }
+
+    res.json({ success: true, message: "Lead deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting lead:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 export default router;
